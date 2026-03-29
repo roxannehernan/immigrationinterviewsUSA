@@ -432,9 +432,12 @@ def build_chart(movement_df, forecast_result, category, region):
     if forecast_result.get("status") == "PROJECTED":
         pd_date = forecast_result["priority_date"]
 
+        # Convert datetime to millisecond timestamp for Plotly add_hline
+        pd_ts = pd_date.timestamp() * 1000
+
         # Priority date line
         fig.add_hline(
-            y=pd_date, line_dash="dash", line_color="#dc2626",
+            y=pd_ts, line_dash="dash", line_color="#dc2626",
             annotation_text=f"Your Priority Date: {pd_date.strftime('%Y-%m-%d')}",
             annotation_position="top left",
             annotation_font_color="#dc2626",
@@ -443,7 +446,7 @@ def build_chart(movement_df, forecast_result, category, region):
         # Projected point
         fig.add_trace(go.Scatter(
             x=[forecast_result["projected_date"]],
-            y=[pd_date],
+            y=[pd_ts],
             mode="markers",
             name="Projected Current Date",
             marker=dict(color="#16a34a", size=14, symbol="star"),
