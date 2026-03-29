@@ -344,6 +344,43 @@ def build_timeline_html(items, accent: str):
         )
     return '<div class="section-shell">' + ''.join(parts) + '</div>'
 
+
+def build_guide_html(tr: dict, case_type: str) -> str:
+    steps_non_ir = [
+        (tr.get("step_filed", "Case filed"), tr.get("step_filed_desc", "")),
+        (tr.get("step_approved", "Petition approved"), tr.get("step_approved_desc", "")),
+        (tr.get("step_nvc", "At NVC"), tr.get("step_nvc_desc", "")),
+        (tr.get("step_current", "Becomes current"), tr.get("step_current_desc", "")),
+        (tr.get("step_dq", "Documentarily qualified"), tr.get("step_dq_desc", "")),
+        (tr.get("step_interview", "Interview scheduled"), tr.get("step_interview_desc", "")),
+    ]
+    steps_ir = [
+        (tr.get("step_filed", "Case filed"), tr.get("step_filed_desc", "")),
+        (tr.get("step_approved", "Petition approved"), tr.get("step_approved_desc", "")),
+        (tr.get("step_nvc", "At NVC"), tr.get("step_nvc_desc", "")),
+        (tr.get("step_dq", "Documentarily qualified"), tr.get("step_dq_desc", "")),
+        (tr.get("step_interview", "Interview scheduled"), tr.get("step_interview_desc", "")),
+    ]
+    steps = steps_ir if case_type == "ir" else steps_non_ir
+    blocks = []
+    for title, desc in steps:
+        blocks.append(f'<div style="padding:.9rem 1rem;border-top:1px solid #1a1a1a;"><div class="metric-l" style="margin-bottom:.25rem;">{title}</div><div class="small-muted">{desc}</div></div>')
+    return f'<div class="section-shell"><div style="font-family:Instrument Serif, serif;font-size:1.2rem;color:#fff;margin-bottom:.35rem;">{tr.get("guide_title", "How this process works")}</div><div class="small-muted" style="margin-bottom:.65rem;">{tr.get("guide_intro","")}</div>{"".join(blocks)}</div>'
+
+def render_faq_and_guide(tr: dict, case_type: str):
+    faq_tab, guide_tab = st.tabs([tr.get("faq", "FAQ"), tr.get("guide", "Process guide")])
+    with faq_tab:
+        with st.expander(tr.get("faq_pd_q", "What is a priority date?")):
+            st.write(tr.get("faq_pd_a", ""))
+        with st.expander(tr.get("faq_fa_q", "What is Final Action vs Dates for Filing?")):
+            st.write(tr.get("faq_fa_a", ""))
+        with st.expander(tr.get("faq_ir_q", "Why are IR and CR different?")):
+            st.write(tr.get("faq_ir_a", ""))
+        with st.expander(tr.get("faq_consulate_q", "Why do consulates change timing?")):
+            st.write(tr.get("faq_consulate_a", ""))
+    with guide_tab:
+        st.markdown(build_guide_html(tr, case_type), unsafe_allow_html=True)
+
 def parse_wait_mid(wait_str: str) -> int:
     low, high = parse_wait_time(wait_str)
     return int(round((low + high) / 2))
@@ -474,16 +511,34 @@ if case_type == "ir":
         consulate_block(selected_post, interview_early, interview_late, accent, tr)
         st.plotly_chart(build_consulate_map(posts, selected_post["id"], accent), use_container_width=True)
 
+    
+# Guard for IR path
+if "latest_bulletin_dt" not in locals():
+    latest_bulletin_dt = datetime.today()
+
     st.markdown(f'<div class="kicker" style="margin-bottom:.5rem;">{tr.get("dataFreshness", "Data freshness")}</div>', unsafe_allow_html=True)
     f1, f2, f3 = st.columns(3)
-    with f1: metric_block(tr.get("latestBulletin", "Latest bulletin"), latest_bulletin_dt.strftime("%b %Y"))
+    with f1: metric_block(tr.get("latestBulletin", "Latest bulletin"), (latest_bulletin_dt if "latest_bulletin_dt" in locals() and latest_bulletin_dt else datetime.today()).strftime("%b %Y"))
     with f2: metric_block(tr.get("lastRefresh", "Loaded now"), datetime.now().strftime("%Y-%m-%d %H:%M"))
     with f3: metric_block(tr.get("source", "Source"), tr.get("openSource", "travel.state.gov"))
+
+    render_faq_and_guide(tr, "ir")
 
     st.markdown('<div style="position:fixed;bottom:10px;right:20px;font-size:10px;color:#555;font-family:JetBrains Mono, monospace;">github.com/roxannehernan</div>', unsafe_allow_html=True)
     st.stop()
 
 df = fetch_bulletins(history_months)
+
+# Ensure latest bulletin date is always available (for IR path too)
+try:
+    if 'df' in locals() and df is not None and not getattr(df, "empty", True):
+        latest_bulletin_dt = df["bulletin_date"].max()
+    else:
+        _df_tmp = fetch_bulletins(3)
+        latest_bulletin_dt = _df_tmp["bulletin_date"].max() if not _df_tmp.empty else datetime.today()
+except Exception:
+    latest_bulletin_dt = datetime.today()
+
 if df.empty:
     st.error(tr["noData"])
     st.stop()
@@ -547,11 +602,18 @@ with tab_forecast:
             summary = f"{CATEGORY_LABELS.get(category, category)} | {region_label} | {selected_post['city'] if selected_post else '—'} | Priority date: {priority_dt.strftime('%Y-%m-%d')} | Current estimate: {fc['projected_current'].strftime('%Y-%m-%d')} | Interview estimate: {fc['interview_early'].strftime('%Y-%m-%d')} to {fc['interview_late'].strftime('%Y-%m-%d')}"
             st.text_area(tr.get("copyReady", "Copy ready summary"), summary, height=90)
 
-        st.markdown(f'<div class="kicker" style="margin-bottom:.5rem;">{tr.get("dataFreshness", "Data freshness")}</div>', unsafe_allow_html=True)
+        
+# Guard for IR path
+if "latest_bulletin_dt" not in locals():
+    latest_bulletin_dt = datetime.today()
+
+    st.markdown(f'<div class="kicker" style="margin-bottom:.5rem;">{tr.get("dataFreshness", "Data freshness")}</div>', unsafe_allow_html=True)
         f1, f2, f3 = st.columns(3)
-        with f1: metric_block(tr.get("latestBulletin", "Latest bulletin"), latest_bulletin_dt.strftime("%b %Y"))
+        with f1: metric_block(tr.get("latestBulletin", "Latest bulletin"), (latest_bulletin_dt if "latest_bulletin_dt" in locals() and latest_bulletin_dt else datetime.today()).strftime("%b %Y"))
         with f2: metric_block(tr.get("lastRefresh", "Loaded now"), datetime.now().strftime("%Y-%m-%d %H:%M"))
         with f3: metric_block(tr.get("source", "Source"), tr.get("openSource", "travel.state.gov"))
+
+        render_faq_and_guide(tr, case_type)
 
 with tab_data:
     data_df = mv[["bulletin_date", "cutoff_date", "move"]].copy()
