@@ -833,11 +833,84 @@ if case_type == "IR / CR":
             """,
             unsafe_allow_html=True,
         )
+
+    today_dt = datetime.today()
+    petition_early = today_dt + timedelta(days=30 * 6)
+    petition_late = today_dt + timedelta(days=30 * 14)
+    nvc_early = petition_early + timedelta(days=30 * 2)
+    nvc_late = petition_late + timedelta(days=30 * 6)
+    interview_early = nvc_early + timedelta(days=30 * 1)
+    interview_late = nvc_late + timedelta(days=30 * 3)
+
+    ir_timeline = pd.DataFrame(
+        {
+            "stage": ["Petition filed", "I-130 approved", "NVC complete", "Interview"],
+            "early": [today_dt, petition_early, nvc_early, interview_early],
+            "late": [today_dt, petition_late, nvc_late, interview_late],
+        }
+    )
+
+    fig_ir = go.Figure()
+    fig_ir.add_trace(
+        go.Scatter(
+            x=ir_timeline["early"],
+            y=ir_timeline["stage"],
+            mode="lines+markers",
+            name="Early path",
+            line=dict(width=2.5, color=accent),
+            marker=dict(size=8, color=accent),
+        )
+    )
+    fig_ir.add_trace(
+        go.Scatter(
+            x=ir_timeline["late"],
+            y=ir_timeline["stage"],
+            mode="lines+markers",
+            name="Late path",
+            line=dict(width=2.5, color="#6f532f", dash="dot"),
+            marker=dict(size=8, color="#6f532f"),
+        )
+    )
+    for idx, row in ir_timeline.iterrows():
+        fig_ir.add_shape(
+            type="rect",
+            x0=row["early"],
+            x1=row["late"],
+            y0=idx - 0.22,
+            y1=idx + 0.22,
+            xref="x",
+            yref="y",
+            line=dict(color="rgba(0,0,0,0)"),
+            fillcolor="rgba(202,160,114,0.12)",
+            layer="below",
+        )
+    fig_ir.add_vline(x=today_dt, line_dash="dash", line_color="#c0392b", line_width=1.1)
+    fig_ir.add_annotation(
+        x=today_dt,
+        y="Petition filed",
+        text="Today",
+        showarrow=False,
+        yshift=18,
+        font=dict(color="#c0392b", size=10),
+        bgcolor="#111111",
+        bordercolor="#222222",
+    )
+    fig_ir.update_layout(
+        height=330,
+        margin=dict(l=12, r=12, t=8, b=8),
+        paper_bgcolor="#0a0a0a",
+        plot_bgcolor="#0a0a0a",
+        font=dict(color="#777", family="Karla, sans-serif"),
+        legend=dict(orientation="h", y=1.07, x=0),
+        xaxis=dict(gridcolor="#1a1a1a", title=None),
+        yaxis=dict(gridcolor="#1a1a1a", title=None, categoryorder="array", categoryarray=list(ir_timeline["stage"])),
+    )
+
     st.markdown(
         """
         <div class="section-shell">
             <div style="font-family:'Instrument Serif',serif;font-size:1.25rem;color:#fff;margin-bottom:.45rem;">Immediate relative visas are always current</div>
-            <div class="small-muted">Processing still depends on petition approval, NVC document completion, interview capacity, and post-specific scheduling.</div>
+            <div class="small-muted">There is no visa bulletin cutoff, but you can still forecast the processing path from petition to interview using practical timing windows.</div>
         </div>
         """,
         unsafe_allow_html=True,
@@ -851,8 +924,35 @@ if case_type == "IR / CR":
         metric_block("Interview", "1–3 mo")
     with x4:
         metric_block("Total estimated", "9–23 mo")
+
+    st.markdown('<div class="section-shell"><div class="kicker" style="margin-bottom:.6rem;">IR / CR forecast timeline</div>', unsafe_allow_html=True)
+    st.plotly_chart(fig_ir, use_container_width=True)
+    st.markdown("</div>", unsafe_allow_html=True)
+
+    st.markdown(
+        f"""
+        <div class="note-shell">
+            <div style="font-family:'Instrument Serif',serif;font-size:1.18rem;color:#fff;margin-bottom:.45rem;">Projected processing window</div>
+            <div class="small-muted" style="margin-bottom:.9rem;">This forecast is not based on visa bulletin movement. It is based on typical petition, NVC, and scheduling ranges for immediate relatives.</div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:1px;">
+                <div style="background:#111;padding:.95rem 1rem;">
+                    <div class="metric-l">Case completion range</div>
+                    <div style="font-family:'JetBrains Mono',monospace;color:#fff;margin-top:.3rem;">{petition_early.strftime("%b %Y")} — {nvc_late.strftime("%b %Y")}</div>
+                    <div class="small-muted" style="margin-top:.15rem;">petition approval through NVC completion</div>
+                </div>
+                <div style="background:#111;padding:.95rem 1rem;">
+                    <div class="metric-l">Interview window</div>
+                    <div style="font-family:'JetBrains Mono',monospace;color:{accent};margin-top:.3rem;">{interview_early.strftime("%b %Y")} — {interview_late.strftime("%b %Y")}</div>
+                    <div class="small-muted" style="margin-top:.15rem;">actual consulate capacity can tighten or stretch this</div>
+                </div>
+            </div>
+        </div>
+        """,
+        unsafe_allow_html=True,
+    )
+
     if selected_post:
-        consulate_block(selected_post, None, None, accent)
+        consulate_block(selected_post, interview_early, interview_late, accent)
         st.plotly_chart(build_consulate_map(posts, selected_post["id"], accent), use_container_width=True)
     st.stop()
 
