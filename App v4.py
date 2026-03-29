@@ -620,8 +620,8 @@ with st.sidebar:
     if case_type != "ir":
         table_type = st.selectbox(tr["chartType"], ["final_action", "dates_for_filing"], format_func=lambda x: tr["finalAction"] if x == "final_action" else tr["datesForFiling"], key="table_type")
         priority_date = st.date_input(tr["priorityDate"], datetime(2022, 3, 15), key="priority_date")
-        confidence = st.select_slider(tr["confidence"], [0.8, 0.9, 0.95], value=0.8, key="confidence")
-        history_months = st.slider(tr["history"], 6, 36, 13, key="history_months")
+        confidence = 0.9
+        history_months = 13
         nvc_complete_date = None
     else:
         table_type = "final_action"
@@ -743,9 +743,10 @@ with tab_forecast:
     if fc["status"] == "OK":
         m1, m2, m3, m4 = st.columns(4)
         with m1: metric_block(tr["daysToCurrent"], f'{fc["days_remaining"]:,}')
-        with m2: metric_block(tr["avgMovement"], f'{fc["avg_move"]} d/mo')
+        with m2: metric_block("TREND", f'{fc["avg_move"]} d/mo')
         with m3: metric_block(tr["currentBy"], fc["projected_current"].strftime("%b %Y"))
         with m4: metric_block(tr["interviewWindow"], f'{fc["interview_early"].strftime("%b %Y")} — {fc["interview_late"].strftime("%b %Y")}')
+        st.markdown('<div class="small-muted" style="margin:.55rem 0 1rem 0;">Forecast shows an expected timeline based on recent movement and scheduling patterns.</div>', unsafe_allow_html=True)
 
     st.markdown(f'<div class="section-shell"><div class="kicker" style="margin-bottom:.6rem;">{tr["cutoffProgression"]}</div>', unsafe_allow_html=True)
     st.plotly_chart(build_progression_chart(mv, priority_dt, fc, accent), use_container_width=True)
@@ -757,20 +758,28 @@ with tab_forecast:
 
     if fc["status"] == "OK":
         st.markdown(
-            f'<div class="section-shell"><div style="font-family:Instrument Serif, serif;font-size:1.18rem;color:#fff;margin-bottom:.45rem;">{tr["projectedWindow"]}</div>'
-            f'<div class="small-muted" style="margin-bottom:.9rem;">{tr["basedOn"]} {fc["n"]} {tr["monthsOf"]} {int(confidence*100)}% {tr["confidenceWord"]}. {tr["nvcNote"]}</div>'
-            f'<div class="small-muted" style="margin-bottom:.9rem;">{tr["uncertainty"]}</div>'
+            f'<div class="section-shell">'
+            f'<div style="font-family:Instrument Serif, serif;font-size:1.2rem;color:#fff;margin-bottom:.6rem;">{tr["forecast"]}</div>'
             f'<div style="display:grid;grid-template-columns:1fr 1fr;gap:1px;">'
-            f'<div style="background:#111;padding:.95rem 1rem;"><div class="metric-l">{tr["becomeCurrent"]}</div><div style="font-family:JetBrains Mono, monospace;color:#fff;margin-top:.3rem;">{fc["projected_current"].strftime("%B %Y")}</div><div class="small-muted" style="margin-top:.15rem;">{fc["months_est"]} {tr["monthsFromNow"]}</div></div>'
-            f'<div style="background:#111;padding:.95rem 1rem;"><div class="metric-l">{tr["interviewSched"]}</div><div style="font-family:JetBrains Mono, monospace;color:{accent};margin-top:.3rem;">{fc["interview_early"].strftime("%b %Y")} — {fc["interview_late"].strftime("%b %Y")}</div><div class="small-muted" style="margin-top:.15rem;">{tr["consulateCapacity"]}</div></div>'
-            f'</div></div>',
+            f'<div style="background:#111;padding:.95rem 1rem;">'
+            f'<div class="metric-l">{tr["becomeCurrent"]}</div>'
+            f'<div style="font-family:JetBrains Mono, monospace;color:#fff;margin-top:.3rem;">{fc["projected_current"].strftime("%B %Y")}</div>'
+            f'<div class="small-muted" style="margin-top:.15rem;">{fc["months_est"]} {tr["monthsFromNow"]}</div>'
+            f'</div>'
+            f'<div style="background:#111;padding:.95rem 1rem;">'
+            f'<div class="metric-l">{tr["interviewWindow"]}</div>'
+            f'<div style="font-family:JetBrains Mono, monospace;color:{accent};margin-top:.3rem;">{fc["interview_early"].strftime("%b %Y")} — {fc["interview_late"].strftime("%b %Y")}</div>'
+            f'<div class="small-muted" style="margin-top:.15rem;">{tr["consulateCapacity"]}</div>'
+            f'</div>'
+            f'</div>'
+            f'</div>',
             unsafe_allow_html=True,
         )
 
         st.markdown(f'<div class="kicker" style="margin-bottom:.5rem;">{tr["timeline"]}</div>', unsafe_allow_html=True)
         timeline_items = [
             {"label": tr["priorityDate"], "value": priority_dt.strftime("%b %d, %Y"), "note": CATEGORY_LABELS.get(category, category)},
-            {"label": tr["currentBy"], "value": fc["projected_current"].strftime("%b %Y"), "note": tr["becomeCurrent"]},
+            {"label": "CURRENT ESTIMATE", "value": fc["projected_current"].strftime("%b %Y"), "note": tr["becomeCurrent"]},
             {"label": tr["interviewWindow"], "value": f'{fc["interview_early"].strftime("%b %Y")} — {fc["interview_late"].strftime("%b %Y")}', "note": tr["interviewSched"]},
         ]
         st.markdown(build_timeline_html(timeline_items, accent), unsafe_allow_html=True)
