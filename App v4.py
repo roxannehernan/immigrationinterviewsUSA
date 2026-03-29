@@ -356,6 +356,20 @@ def metric_block(label: str, value: str):
         unsafe_allow_html=True,
     )
 
+
+def parse_wait_time(wait_str: str) -> tuple[int, int]:
+    if not wait_str:
+        return (60, 120)
+
+    nums = re.findall(r"\d+", wait_str)
+    if len(nums) == 1:
+        val = int(nums[0])
+        return (val, val)
+    if len(nums) >= 2:
+        return (int(nums[0]), int(nums[1]))
+
+    return (60, 120)
+
 def consulate_block(consulate: dict, est_early: Optional[datetime], est_late: Optional[datetime], accent: str):
     st.markdown(
         f"""
@@ -839,12 +853,18 @@ if case_type == "IR / CR":
     petition_late = today_dt + timedelta(days=30 * 14)
     nvc_early = petition_early + timedelta(days=30 * 2)
     nvc_late = petition_late + timedelta(days=30 * 6)
-    interview_early = nvc_early + timedelta(days=30 * 1)
-    interview_late = nvc_late + timedelta(days=30 * 3)
+
+    if selected_post:
+        wait_early, wait_late = parse_wait_time(selected_post["wait"])
+    else:
+        wait_early, wait_late = (60, 120)
+
+    interview_early = nvc_early + timedelta(days=wait_early)
+    interview_late = nvc_late + timedelta(days=wait_late)
 
     ir_timeline = pd.DataFrame(
         {
-            "stage": ["Petition filed", "I-130 approved", "NVC complete", "Interview"],
+            "stage": ["Petition filed", "I-130 approved", "NVC complete", "Interview scheduled"],
             "early": [today_dt, petition_early, nvc_early, interview_early],
             "late": [today_dt, petition_late, nvc_late, interview_late],
         }
@@ -910,7 +930,7 @@ if case_type == "IR / CR":
         """
         <div class="section-shell">
             <div style="font-family:'Instrument Serif',serif;font-size:1.25rem;color:#fff;margin-bottom:.45rem;">Immediate relative visas are always current</div>
-            <div class="small-muted">There is no visa bulletin cutoff, but you can still forecast the processing path from petition to interview using practical timing windows.</div>
+            <div class="small-muted">There is no visa bulletin cutoff, but interview timing still depends on petition approval, NVC completion, and the selected consulate's scheduling range.</div>
         </div>
         """,
         unsafe_allow_html=True,
@@ -921,9 +941,9 @@ if case_type == "IR / CR":
     with x2:
         metric_block("NVC Processing", "2–6 mo")
     with x3:
-        metric_block("Interview", "1–3 mo")
+        metric_block("Consulate wait", f"{wait_early}–{wait_late} d")
     with x4:
-        metric_block("Total estimated", "9–23 mo")
+        metric_block("Interview window", f'{interview_early.strftime("%b %Y")} — {interview_late.strftime("%b %Y")}')
 
     st.markdown('<div class="section-shell"><div class="kicker" style="margin-bottom:.6rem;">IR / CR forecast timeline</div>', unsafe_allow_html=True)
     st.plotly_chart(fig_ir, use_container_width=True)
@@ -933,7 +953,7 @@ if case_type == "IR / CR":
         f"""
         <div class="note-shell">
             <div style="font-family:'Instrument Serif',serif;font-size:1.18rem;color:#fff;margin-bottom:.45rem;">Projected processing window</div>
-            <div class="small-muted" style="margin-bottom:.9rem;">This forecast is not based on visa bulletin movement. It is based on typical petition, NVC, and scheduling ranges for immediate relatives.</div>
+            <div class="small-muted" style="margin-bottom:.9rem;">This forecast is based on petition timing, NVC timing, and the selected consulate's scheduling wait of {wait_early} to {wait_late} days.</div>
             <div style="display:grid;grid-template-columns:1fr 1fr;gap:1px;">
                 <div style="background:#111;padding:.95rem 1rem;">
                     <div class="metric-l">Case completion range</div>
@@ -941,9 +961,9 @@ if case_type == "IR / CR":
                     <div class="small-muted" style="margin-top:.15rem;">petition approval through NVC completion</div>
                 </div>
                 <div style="background:#111;padding:.95rem 1rem;">
-                    <div class="metric-l">Interview window</div>
+                    <div class="metric-l">Interview scheduling</div>
                     <div style="font-family:'JetBrains Mono',monospace;color:{accent};margin-top:.3rem;">{interview_early.strftime("%b %Y")} — {interview_late.strftime("%b %Y")}</div>
-                    <div class="small-muted" style="margin-top:.15rem;">actual consulate capacity can tighten or stretch this</div>
+                    <div class="small-muted" style="margin-top:.15rem;">driven by the selected consulate wait time</div>
                 </div>
             </div>
         </div>
