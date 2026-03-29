@@ -797,7 +797,7 @@ st.markdown(
     <style>:root{{--accent:{accent};}}</style>
     <div style="max-width:620px;margin-bottom:2rem;">
         <h1 class="hero-title">Visa Bulletin Forecast</h1>
-        <p class="hero-copy">Closer to the editorial React layout you pasted: tighter typography, harder dark theme, mono labels, a cleaner metric grid, and forecast visuals that feel like a product instead of a generic dashboard.</p>
+        <p class="hero-copy"></p>
     </div>
     """,
     unsafe_allow_html=True,
