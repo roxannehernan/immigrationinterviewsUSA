@@ -11,12 +11,7 @@ import requests
 import streamlit as st
 from bs4 import BeautifulSoup
 
-st.set_page_config(
-    page_title="Visa Bulletin Forecast",
-    page_icon="📍",
-    layout="wide",
-    initial_sidebar_state="expanded",
-)
+st.set_page_config(page_title="Visa Bulletin Forecast", page_icon="📍", layout="wide", initial_sidebar_state="expanded")
 
 BASE_URL = "https://travel.state.gov"
 VISA_BULLETIN_INDEX = f"{BASE_URL}/content/travel/en/legal/visa-law0/visa-bulletin.html"
@@ -75,120 +70,73 @@ CONSULATES = {
     ],
     "mexico": [
         {"id": "cjs", "name": "Consulate Ciudad Juárez", "city": "Ciudad Juárez", "addr": "Paseo de la Victoria #3650", "lat": 31.6904, "lng": -106.4245, "note": "Highest IV volume worldwide", "wait": "60–120 days", "flag": "🇲🇽"},
-        {"id": "cdmx", "name": "Embassy Mexico City", "city": "CDMX", "addr": "Paseo de la Reforma 305", "lat": 19.4276, "lng": -99.1677, "note": "Largest embassy in western hemisphere", "wait": "120–240 days", "flag": "🇲🇽"},
+        {"id": "cdmx", "name": "Embassy Mexico City", "city": "CDMX", "addr": "Paseo de la Reforma 305", "lat": 19.4276, "lng": -99.1677, "note": "Largest embassy in W. Hemisphere", "wait": "120–240 days", "flag": "🇲🇽"},
         {"id": "gdl", "name": "Consulate Guadalajara", "city": "Guadalajara", "addr": "Progreso 175", "lat": 20.6722, "lng": -103.3625, "note": "Western Mexico", "wait": "60–90 days", "flag": "🇲🇽"},
         {"id": "mty", "name": "Consulate Monterrey", "city": "Monterrey", "addr": "Av. Alfonso Reyes 150", "lat": 25.6714, "lng": -100.3091, "note": "Northeast Mexico", "wait": "60–90 days", "flag": "🇲🇽"},
-        {"id": "tij", "name": "Consulate Tijuana", "city": "Tijuana", "addr": "Paseo de las Culturas", "lat": 32.5366, "lng": -116.9717, "note": "High volume border post", "wait": "60–90 days", "flag": "🇲🇽"},
+        {"id": "tij", "name": "Consulate Tijuana", "city": "Tijuana", "addr": "Paseo de las Culturas", "lat": 32.5366, "lng": -116.9717, "note": "High volume border", "wait": "60–90 days", "flag": "🇲🇽"},
     ],
-    "philippines": [
-        {"id": "mnl", "name": "Embassy Manila", "city": "Manila", "addr": "1201 Roxas Blvd", "lat": 14.5619, "lng": 120.9801, "note": "Busiest IV post worldwide", "wait": "90–180 days", "flag": "🇵🇭"},
-    ],
-    "el_salvador": [
-        {"id": "ss", "name": "Embassy San Salvador", "city": "San Salvador", "addr": "Blvd. Santa Elena", "lat": 13.6664, "lng": -89.2530, "note": "Sole post", "wait": "60–120 days", "flag": "🇸🇻"},
-    ],
-    "guatemala": [
-        {"id": "gua", "name": "Embassy Guatemala City", "city": "Guatemala City", "addr": "Av. Reforma 7-01", "lat": 14.5980, "lng": -90.5137, "note": "Sole post", "wait": "60–120 days", "flag": "🇬🇹"},
-    ],
-    "honduras": [
-        {"id": "tgu", "name": "Embassy Tegucigalpa", "city": "Tegucigalpa", "addr": "Av. La Paz", "lat": 14.0910, "lng": -87.1963, "note": "Sole post", "wait": "60–120 days", "flag": "🇭🇳"},
-    ],
+    "philippines": [{"id": "mnl", "name": "Embassy Manila", "city": "Manila", "addr": "1201 Roxas Blvd", "lat": 14.5619, "lng": 120.9801, "note": "Busiest IV post worldwide", "wait": "90–180 days", "flag": "🇵🇭"}],
+    "el_salvador": [{"id": "ss", "name": "Embassy San Salvador", "city": "San Salvador", "addr": "Blvd. Santa Elena", "lat": 13.6664, "lng": -89.2530, "note": "Sole post", "wait": "60–120 days", "flag": "🇸🇻"}],
+    "guatemala": [{"id": "gua", "name": "Embassy Guatemala City", "city": "Guatemala City", "addr": "Av. Reforma 7-01", "lat": 14.5980, "lng": -90.5137, "note": "Sole post", "wait": "60–120 days", "flag": "🇬🇹"}],
+    "honduras": [{"id": "tgu", "name": "Embassy Tegucigalpa", "city": "Tegucigalpa", "addr": "Av. La Paz", "lat": 14.0910, "lng": -87.1963, "note": "Sole post", "wait": "60–120 days", "flag": "🇭🇳"}],
     "vietnam": [
         {"id": "hcm", "name": "Consulate HCMC", "city": "Ho Chi Minh City", "addr": "4 Le Duan Blvd", "lat": 10.7816, "lng": 106.7010, "note": "Primary IV post", "wait": "60–120 days", "flag": "🇻🇳"},
         {"id": "han", "name": "Embassy Hanoi", "city": "Hanoi", "addr": "7 Lang Ha St", "lat": 21.0170, "lng": 105.8132, "note": "Full IV processing", "wait": "45–90 days", "flag": "🇻🇳"},
     ],
-    "korea": [
-        {"id": "sel", "name": "Embassy Seoul", "city": "Seoul", "addr": "188 Sejong-daero", "lat": 37.5661, "lng": 126.9747, "note": "Sole post", "wait": "30–60 days", "flag": "🇰🇷"},
-    ],
+    "korea": [{"id": "sel", "name": "Embassy Seoul", "city": "Seoul", "addr": "188 Sejong-daero", "lat": 37.5661, "lng": 126.9747, "note": "Sole post", "wait": "30–60 days", "flag": "🇰🇷"}],
     "brazil": [
-        {"id": "sp", "name": "Consulate São Paulo", "city": "São Paulo", "addr": "Rua Henri Dunant 500", "lat": -23.6275, "lng": -46.6958, "note": "Highest volume in Brazil", "wait": "60–120 days", "flag": "🇧🇷"},
-        {"id": "rio", "name": "Consulate Rio", "city": "Rio de Janeiro", "addr": "Av. Pres. Wilson 147", "lat": -22.9028, "lng": -43.1722, "note": "Full IV processing", "wait": "45–90 days", "flag": "🇧🇷"},
+        {"id": "sp", "name": "Consulate São Paulo", "city": "São Paulo", "addr": "Rua Henri Dunant 500", "lat": -23.6275, "lng": -46.6958, "note": "Highest volume Brazil", "wait": "60–120 days", "flag": "🇧🇷"},
+        {"id": "rio", "name": "Consulate Rio", "city": "Rio de Janeiro", "addr": "Av. Pres. Wilson 147", "lat": -22.9028, "lng": -43.1722, "note": "Full IV", "wait": "45–90 days", "flag": "🇧🇷"},
     ],
-    "bangladesh": [
-        {"id": "dhk", "name": "Embassy Dhaka", "city": "Dhaka", "addr": "Madani Ave", "lat": 23.8103, "lng": 90.4125, "note": "High family volume", "wait": "90–180 days", "flag": "🇧🇩"},
-    ],
+    "bangladesh": [{"id": "dhk", "name": "Embassy Dhaka", "city": "Dhaka", "addr": "Madani Ave", "lat": 23.8103, "lng": 90.4125, "note": "High family volume", "wait": "90–180 days", "flag": "🇧🇩"}],
     "pakistan": [
         {"id": "isl", "name": "Embassy Islamabad", "city": "Islamabad", "addr": "Diplomatic Enclave", "lat": 33.7215, "lng": 73.0884, "note": "Primary post", "wait": "90–180 days", "flag": "🇵🇰"},
-        {"id": "khi", "name": "Consulate Karachi", "city": "Karachi", "addr": "Mai Kolachi Rd", "lat": 24.8465, "lng": 67.0195, "note": "Sindh and Balochistan", "wait": "60–120 days", "flag": "🇵🇰"},
+        {"id": "khi", "name": "Consulate Karachi", "city": "Karachi", "addr": "Mai Kolachi Rd", "lat": 24.8465, "lng": 67.0195, "note": "Sindh & Balochistan", "wait": "60–120 days", "flag": "🇵🇰"},
     ],
     "all": [
-        {"id": "lon", "name": "Embassy London", "city": "London", "addr": "33 Nine Elms Ln", "lat": 51.48, "lng": -0.12, "note": "Major UK and EU post", "wait": "30–60 days", "flag": "🇬🇧"},
-        {"id": "fra", "name": "Consulate Frankfurt", "city": "Frankfurt", "addr": "Gießener Str. 30", "lat": 50.12, "lng": 8.68, "note": "Germany and high EB demand", "wait": "30–45 days", "flag": "🇩🇪"},
-        {"id": "mtl", "name": "Consulate Montreal", "city": "Montreal", "addr": "Sainte-Catherine O", "lat": 45.50, "lng": -73.57, "note": "Primary Canadian IV post", "wait": "30–60 days", "flag": "🇨🇦"},
-        {"id": "syd", "name": "Consulate Sydney", "city": "Sydney", "addr": "19-29 Martin Pl", "lat": -33.87, "lng": 151.21, "note": "AU, NZ and Pacific", "wait": "30–45 days", "flag": "🇦🇺"},
+        {"id": "lon", "name": "Embassy London", "city": "London", "addr": "33 Nine Elms Ln", "lat": 51.48, "lng": -0.12, "note": "Major EU/UK post", "wait": "30–60 days", "flag": "🇬🇧"},
+        {"id": "fra", "name": "Consulate Frankfurt", "city": "Frankfurt", "addr": "Gießener Str. 30", "lat": 50.12, "lng": 8.68, "note": "Germany — high EB", "wait": "30–45 days", "flag": "🇩🇪"},
+        {"id": "mtl", "name": "Consulate Montreal", "city": "Montreal", "addr": "Sainte-Catherine O", "lat": 45.50, "lng": -73.57, "note": "Primary Canadian IV", "wait": "30–60 days", "flag": "🇨🇦"},
+        {"id": "syd", "name": "Consulate Sydney", "city": "Sydney", "addr": "19-29 Martin Pl", "lat": -33.87, "lng": 151.21, "note": "AU/NZ/Pacific", "wait": "30–45 days", "flag": "🇦🇺"},
         {"id": "acc", "name": "Embassy Accra", "city": "Accra", "addr": "Fourth Circular Rd", "lat": 5.57, "lng": -0.18, "note": "West Africa hub", "wait": "60–120 days", "flag": "🇬🇭"},
         {"id": "nbo", "name": "Embassy Nairobi", "city": "Nairobi", "addr": "United Nations Ave", "lat": -1.24, "lng": 36.81, "note": "East Africa hub", "wait": "60–90 days", "flag": "🇰🇪"},
         {"id": "dxb", "name": "Consulate Dubai", "city": "Dubai", "addr": "Al Seef Rd", "lat": 25.26, "lng": 55.30, "note": "UAE", "wait": "30–60 days", "flag": "🇦🇪"},
-        {"id": "bkk", "name": "Embassy Bangkok", "city": "Bangkok", "addr": "95 Wireless Rd", "lat": 13.74, "lng": 100.55, "note": "Thailand, Laos and Cambodia", "wait": "45–90 days", "flag": "🇹🇭"},
-        {"id": "sto", "name": "Embassy Santo Domingo", "city": "Santo Domingo", "addr": "Av. Colombia #57", "lat": 18.46, "lng": -69.93, "note": "High family based demand", "wait": "60–120 days", "flag": "🇩🇴"},
+        {"id": "bkk", "name": "Embassy Bangkok", "city": "Bangkok", "addr": "95 Wireless Rd", "lat": 13.74, "lng": 100.55, "note": "Thailand/Laos/Cambodia", "wait": "45–90 days", "flag": "🇹🇭"},
+        {"id": "sto", "name": "Embassy Santo Domingo", "city": "Santo Domingo", "addr": "Av. Colombia #57", "lat": 18.46, "lng": -69.93, "note": "High family-based", "wait": "60–120 days", "flag": "🇩🇴"},
         {"id": "bog", "name": "Embassy Bogotá", "city": "Bogotá", "addr": "Calle 24 Bis #48-50", "lat": 4.64, "lng": -74.09, "note": "Colombia", "wait": "45–90 days", "flag": "🇨🇴"},
         {"id": "jnb", "name": "Consulate Johannesburg", "city": "Johannesburg", "addr": "1 Sandton Dr", "lat": -26.11, "lng": 28.06, "note": "Southern Africa", "wait": "30–60 days", "flag": "🇿🇦"},
         {"id": "war", "name": "Embassy Warsaw", "city": "Warsaw", "addr": "Aleje Ujazdowskie", "lat": 52.22, "lng": 21.02, "note": "Poland", "wait": "30–45 days", "flag": "🇵🇱"},
     ],
 }
 
-MONTH_MAP = {
-    "january": 1, "february": 2, "march": 3, "april": 4, "may": 5, "june": 6,
-    "july": 7, "august": 8, "september": 9, "october": 10, "november": 11, "december": 12,
-}
+MONTH_MAP = {"january":1,"february":2,"march":3,"april":4,"may":5,"june":6,"july":7,"august":8,"september":9,"october":10,"november":11,"december":12}
 
-st.markdown("""
+TRANSLATIONS = {'en': {'label': 'English', 'flag': '🇺🇸', 'brand': 'VISA FORECAST', 'sub': 'U.S. Department of State · Visa Bulletin Analysis', 'language': 'LANGUAGE', 'catType': 'CATEGORY', 'prefCat': 'PREFERENCE', 'region': 'REGION', 'consulate': 'INTERVIEW LOCATION', 'chartType': 'CHART', 'finalAction': 'Final Action', 'datesForFiling': 'Dates for Filing', 'priorityDate': 'PRIORITY DATE', 'confidence': 'CONFIDENCE', 'history': 'BULLETINS', 'nvcCompleteDate': 'NVC COMPLETE DATE', 'runBtn': 'GENERATE FORECAST', 'heroTitle': 'Visa Bulletin Forecast', 'months': 'months', 'categories': 'categories', 'consulates': 'consulates', 'liveData': 'LIVE', 'employmentBased': 'Employment', 'familyBased': 'Family', 'immediateRelative': 'IR / CR', 'irNote': 'Immediate relative visas are always current.', 'irExplain': 'After NVC complete or documentarily qualified status, the interview depends on the wait time at the selected consulate.', 'nvcComplete': 'NVC COMPLETE', 'avgWaitTime': 'WAIT', 'interviewStart': 'INTERVIEW START', 'interviewEnd': 'INTERVIEW END', 'days': 'days', 'interviewForecast': 'INTERVIEW FORECAST', 'startingPoint': 'STARTING POINT', 'estimatedWindow': 'ESTIMATED WINDOW', 'startingPointCopy': 'NVC complete or documentarily qualified', 'estimatedWindowCopy': 'based on the selected consulate wait time', 'address': 'Address', 'consulateNote': 'Notes', 'estimatedScheduling': 'Estimated scheduling', 'mapView': 'Open in Maps ↗', 'daysToCurrent': 'DAYS REMAINING', 'avgMovement': 'AVG. MOVEMENT', 'currentBy': 'EST. CURRENT', 'interviewWindow': 'INTERVIEW WINDOW', 'cutoffProgression': 'CUTOFF DATE PROGRESSION', 'forecast': 'Forecast', 'movement': 'Data', 'exportTab': 'Export', 'bulletinsLoaded': 'bulletins', 'projectedWindow': 'PROJECTED INTERVIEW WINDOW', 'basedOn': 'Based on', 'monthsOf': 'months of data ·', 'confidenceWord': 'confidence', 'becomeCurrent': 'Become current', 'monthsFromNow': 'months from now', 'interviewSched': 'Interview scheduling', 'nvcNote': 'Includes 2–6 mo NVC buffer', 'mean': 'Mean', 'median': 'Median', 'stddev': 'Std dev', 'bulletinData': 'Download bulletin data CSV', 'forecastReport': 'Download forecast JSON', 'alreadyCurrent': 'This priority date is already current based on the latest available bulletin trend.', 'notEnough': 'Not enough movement data to generate a forecast.', 'retro': 'Recent trend does not support a forward forecast right now.', 'noData': 'No visa bulletin data loaded.', 'consulateCapacity': 'consulate capacity can still move this window'}, 'es': {'label': 'Español', 'flag': '🇲🇽', 'brand': 'VISA FORECAST', 'sub': 'Depto. de Estado · Boletín de Visas', 'language': 'IDIOMA', 'catType': 'CATEGORÍA', 'prefCat': 'PREFERENCIA', 'region': 'REGIÓN', 'consulate': 'LUGAR DE ENTREVISTA', 'chartType': 'GRÁFICO', 'finalAction': 'Acción Final', 'datesForFiling': 'Fechas de Presentación', 'priorityDate': 'FECHA DE PRIORIDAD', 'confidence': 'CONFIANZA', 'history': 'BOLETINES', 'nvcCompleteDate': 'FECHA DE NVC COMPLETE', 'runBtn': 'GENERAR PRONÓSTICO', 'heroTitle': 'Pronóstico del Boletín de Visas', 'months': 'meses', 'categories': 'categorías', 'consulates': 'consulados', 'liveData': 'VIVO', 'employmentBased': 'Empleo', 'familyBased': 'Familia', 'immediateRelative': 'IR / CR', 'irNote': 'Las visas IR/CR siempre están al día.', 'irExplain': 'Después de NVC complete o documentarily qualified, la entrevista depende del tiempo de espera del consulado seleccionado.', 'nvcComplete': 'NVC COMPLETE', 'avgWaitTime': 'ESPERA', 'interviewStart': 'ENTREVISTA INICIO', 'interviewEnd': 'ENTREVISTA FIN', 'days': 'días', 'interviewForecast': 'PRONÓSTICO DE ENTREVISTA', 'startingPoint': 'PUNTO DE PARTIDA', 'estimatedWindow': 'VENTANA ESTIMADA', 'startingPointCopy': 'NVC complete o documentarily qualified', 'estimatedWindowCopy': 'basada en la espera del consulado seleccionado', 'address': 'Dirección', 'consulateNote': 'Notas', 'estimatedScheduling': 'Programación estimada', 'mapView': 'Abrir en Maps ↗', 'daysToCurrent': 'DÍAS RESTANTES', 'avgMovement': 'MOV. PROM.', 'currentBy': 'EST. AL DÍA', 'interviewWindow': 'VENTANA DE ENTREVISTA', 'cutoffProgression': 'PROGRESIÓN DE FECHA LÍMITE', 'forecast': 'Pronóstico', 'movement': 'Datos', 'exportTab': 'Exportar', 'bulletinsLoaded': 'boletines', 'projectedWindow': 'VENTANA PROYECTADA DE ENTREVISTA', 'basedOn': 'Basado en', 'monthsOf': 'meses de datos ·', 'confidenceWord': 'confianza', 'becomeCurrent': 'Ponerse al día', 'monthsFromNow': 'meses desde ahora', 'interviewSched': 'Programación de entrevista', 'nvcNote': 'Incluye 2–6 meses de buffer NVC', 'mean': 'Media', 'median': 'Mediana', 'stddev': 'Desv. est.', 'bulletinData': 'Descargar datos CSV', 'forecastReport': 'Descargar pronóstico JSON', 'alreadyCurrent': 'Esta fecha de prioridad ya está al día según la tendencia más reciente del boletín.', 'notEnough': 'No hay suficiente movimiento para generar un pronóstico.', 'retro': 'La tendencia reciente no permite un pronóstico hacia adelante en este momento.', 'noData': 'No se cargaron datos del boletín de visas.', 'consulateCapacity': 'la capacidad del consulado todavía puede mover esta ventana'}, 'zh': {'label': '中文', 'flag': '🇨🇳', 'brand': '签证预测', 'sub': '美国国务院 · 签证公告分析', 'language': '语言', 'catType': '类别', 'prefCat': '优先类别', 'region': '地区', 'consulate': '面试地点', 'chartType': '图表', 'finalAction': '最终行动', 'datesForFiling': '递交日期', 'priorityDate': '优先日期', 'confidence': '置信度', 'history': '公告数量', 'nvcCompleteDate': 'NVC 完成日期', 'runBtn': '生成预测', 'heroTitle': '签证公告预测', 'months': '月', 'categories': '类别', 'consulates': '领馆', 'liveData': '实时', 'employmentBased': '职业移民', 'familyBased': '家庭移民', 'immediateRelative': 'IR / CR', 'irNote': '直系亲属签证始终当前。', 'irExplain': '在 NVC complete 或 documentarily qualified 之后，面试取决于所选领馆的等待时间。', 'nvcComplete': 'NVC 完成', 'avgWaitTime': '等待时间', 'interviewStart': '面试开始', 'interviewEnd': '面试结束', 'days': '天', 'interviewForecast': '面试预测', 'startingPoint': '起点', 'estimatedWindow': '预计窗口', 'startingPointCopy': 'NVC complete 或 documentarily qualified', 'estimatedWindowCopy': '基于所选领馆等待时间', 'address': '地址', 'consulateNote': '备注', 'estimatedScheduling': '预计安排', 'mapView': '打开地图 ↗', 'daysToCurrent': '剩余天数', 'avgMovement': '平均推进', 'currentBy': '预计当前', 'interviewWindow': '面试窗口', 'cutoffProgression': '截止日期走势', 'forecast': '预测', 'movement': '数据', 'exportTab': '导出', 'bulletinsLoaded': '公告', 'projectedWindow': '预计面试窗口', 'basedOn': '基于', 'monthsOf': '个月数据 ·', 'confidenceWord': '置信度', 'becomeCurrent': '变为当前', 'monthsFromNow': '个月后', 'interviewSched': '面试安排', 'nvcNote': '包含 2–6 个月 NVC 缓冲', 'mean': '均值', 'median': '中位数', 'stddev': '标准差', 'bulletinData': '下载 CSV 数据', 'forecastReport': '下载 JSON 预测', 'alreadyCurrent': '根据最新公告趋势，该优先日期已经当前。', 'notEnough': '没有足够的推进数据来生成预测。', 'retro': '近期趋势暂不支持向前预测。', 'noData': '未加载签证公告数据。', 'consulateCapacity': '领馆容量仍可能改变这个窗口'}, 'hi': {'label': 'हिन्दी', 'flag': '🇮🇳', 'brand': 'VISA FORECAST', 'sub': 'U.S. Department of State · Visa Bulletin Analysis', 'language': 'LANGUAGE', 'catType': 'CATEGORY', 'prefCat': 'PREFERENCE', 'region': 'REGION', 'consulate': 'INTERVIEW LOCATION', 'chartType': 'CHART', 'finalAction': 'Final Action', 'datesForFiling': 'Dates for Filing', 'priorityDate': 'PRIORITY DATE', 'confidence': 'CONFIDENCE', 'history': 'BULLETINS', 'nvcCompleteDate': 'NVC COMPLETE DATE', 'runBtn': 'GENERATE FORECAST', 'heroTitle': 'Visa Bulletin Forecast', 'months': 'months', 'categories': 'categories', 'consulates': 'consulates', 'liveData': 'LIVE', 'employmentBased': 'Employment', 'familyBased': 'Family', 'immediateRelative': 'IR / CR', 'irNote': 'Immediate relative visas are always current.', 'irExplain': 'After NVC complete or documentarily qualified status, the interview depends on the wait time at the selected consulate.', 'nvcComplete': 'NVC COMPLETE', 'avgWaitTime': 'WAIT', 'interviewStart': 'INTERVIEW START', 'interviewEnd': 'INTERVIEW END', 'days': 'days', 'interviewForecast': 'INTERVIEW FORECAST', 'startingPoint': 'STARTING POINT', 'estimatedWindow': 'ESTIMATED WINDOW', 'startingPointCopy': 'NVC complete or documentarily qualified', 'estimatedWindowCopy': 'based on the selected consulate wait time', 'address': 'Address', 'consulateNote': 'Notes', 'estimatedScheduling': 'Estimated scheduling', 'mapView': 'Open in Maps ↗', 'daysToCurrent': 'DAYS REMAINING', 'avgMovement': 'AVG. MOVEMENT', 'currentBy': 'EST. CURRENT', 'interviewWindow': 'INTERVIEW WINDOW', 'cutoffProgression': 'CUTOFF DATE PROGRESSION', 'forecast': 'Forecast', 'movement': 'Data', 'exportTab': 'Export', 'bulletinsLoaded': 'bulletins', 'projectedWindow': 'PROJECTED INTERVIEW WINDOW', 'basedOn': 'Based on', 'monthsOf': 'months of data ·', 'confidenceWord': 'confidence', 'becomeCurrent': 'Become current', 'monthsFromNow': 'months from now', 'interviewSched': 'Interview scheduling', 'nvcNote': 'Includes 2–6 mo NVC buffer', 'mean': 'Mean', 'median': 'Median', 'stddev': 'Std dev', 'bulletinData': 'Download bulletin data CSV', 'forecastReport': 'Download forecast JSON', 'alreadyCurrent': 'This priority date is already current based on the latest available bulletin trend.', 'notEnough': 'Not enough movement data to generate a forecast.', 'retro': 'Recent trend does not support a forward forecast right now.', 'noData': 'No visa bulletin data loaded.', 'consulateCapacity': 'consulate capacity can still move this window'}, 'tl': {'label': 'Filipino', 'flag': '🇵🇭', 'brand': 'VISA FORECAST', 'sub': 'U.S. Department of State · Visa Bulletin Analysis', 'language': 'LANGUAGE', 'catType': 'CATEGORY', 'prefCat': 'PREFERENCE', 'region': 'REGION', 'consulate': 'INTERVIEW LOCATION', 'chartType': 'CHART', 'finalAction': 'Final Action', 'datesForFiling': 'Dates for Filing', 'priorityDate': 'PRIORITY DATE', 'confidence': 'CONFIDENCE', 'history': 'BULLETINS', 'nvcCompleteDate': 'NVC COMPLETE DATE', 'runBtn': 'GENERATE FORECAST', 'heroTitle': 'Visa Bulletin Forecast', 'months': 'months', 'categories': 'categories', 'consulates': 'consulates', 'liveData': 'LIVE', 'employmentBased': 'Employment', 'familyBased': 'Family', 'immediateRelative': 'IR / CR', 'irNote': 'Immediate relative visas are always current.', 'irExplain': 'After NVC complete or documentarily qualified status, the interview depends on the wait time at the selected consulate.', 'nvcComplete': 'NVC COMPLETE', 'avgWaitTime': 'WAIT', 'interviewStart': 'INTERVIEW START', 'interviewEnd': 'INTERVIEW END', 'days': 'days', 'interviewForecast': 'INTERVIEW FORECAST', 'startingPoint': 'STARTING POINT', 'estimatedWindow': 'ESTIMATED WINDOW', 'startingPointCopy': 'NVC complete or documentarily qualified', 'estimatedWindowCopy': 'based on the selected consulate wait time', 'address': 'Address', 'consulateNote': 'Notes', 'estimatedScheduling': 'Estimated scheduling', 'mapView': 'Open in Maps ↗', 'daysToCurrent': 'DAYS REMAINING', 'avgMovement': 'AVG. MOVEMENT', 'currentBy': 'EST. CURRENT', 'interviewWindow': 'INTERVIEW WINDOW', 'cutoffProgression': 'CUTOFF DATE PROGRESSION', 'forecast': 'Forecast', 'movement': 'Data', 'exportTab': 'Export', 'bulletinsLoaded': 'bulletins', 'projectedWindow': 'PROJECTED INTERVIEW WINDOW', 'basedOn': 'Based on', 'monthsOf': 'months of data ·', 'confidenceWord': 'confidence', 'becomeCurrent': 'Become current', 'monthsFromNow': 'months from now', 'interviewSched': 'Interview scheduling', 'nvcNote': 'Includes 2–6 mo NVC buffer', 'mean': 'Mean', 'median': 'Median', 'stddev': 'Std dev', 'bulletinData': 'Download bulletin data CSV', 'forecastReport': 'Download forecast JSON', 'alreadyCurrent': 'This priority date is already current based on the latest available bulletin trend.', 'notEnough': 'Not enough movement data to generate a forecast.', 'retro': 'Recent trend does not support a forward forecast right now.', 'noData': 'No visa bulletin data loaded.', 'consulateCapacity': 'consulate capacity can still move this window'}, 'ko': {'label': '한국어', 'flag': '🇰🇷', 'brand': 'VISA FORECAST', 'sub': 'U.S. Department of State · Visa Bulletin Analysis', 'language': 'LANGUAGE', 'catType': 'CATEGORY', 'prefCat': 'PREFERENCE', 'region': 'REGION', 'consulate': 'INTERVIEW LOCATION', 'chartType': 'CHART', 'finalAction': 'Final Action', 'datesForFiling': 'Dates for Filing', 'priorityDate': 'PRIORITY DATE', 'confidence': 'CONFIDENCE', 'history': 'BULLETINS', 'nvcCompleteDate': 'NVC COMPLETE DATE', 'runBtn': 'GENERATE FORECAST', 'heroTitle': 'Visa Bulletin Forecast', 'months': 'months', 'categories': 'categories', 'consulates': 'consulates', 'liveData': 'LIVE', 'employmentBased': 'Employment', 'familyBased': 'Family', 'immediateRelative': 'IR / CR', 'irNote': 'Immediate relative visas are always current.', 'irExplain': 'After NVC complete or documentarily qualified status, the interview depends on the wait time at the selected consulate.', 'nvcComplete': 'NVC COMPLETE', 'avgWaitTime': 'WAIT', 'interviewStart': 'INTERVIEW START', 'interviewEnd': 'INTERVIEW END', 'days': 'days', 'interviewForecast': 'INTERVIEW FORECAST', 'startingPoint': 'STARTING POINT', 'estimatedWindow': 'ESTIMATED WINDOW', 'startingPointCopy': 'NVC complete or documentarily qualified', 'estimatedWindowCopy': 'based on the selected consulate wait time', 'address': 'Address', 'consulateNote': 'Notes', 'estimatedScheduling': 'Estimated scheduling', 'mapView': 'Open in Maps ↗', 'daysToCurrent': 'DAYS REMAINING', 'avgMovement': 'AVG. MOVEMENT', 'currentBy': 'EST. CURRENT', 'interviewWindow': 'INTERVIEW WINDOW', 'cutoffProgression': 'CUTOFF DATE PROGRESSION', 'forecast': 'Forecast', 'movement': 'Data', 'exportTab': 'Export', 'bulletinsLoaded': 'bulletins', 'projectedWindow': 'PROJECTED INTERVIEW WINDOW', 'basedOn': 'Based on', 'monthsOf': 'months of data ·', 'confidenceWord': 'confidence', 'becomeCurrent': 'Become current', 'monthsFromNow': 'months from now', 'interviewSched': 'Interview scheduling', 'nvcNote': 'Includes 2–6 mo NVC buffer', 'mean': 'Mean', 'median': 'Median', 'stddev': 'Std dev', 'bulletinData': 'Download bulletin data CSV', 'forecastReport': 'Download forecast JSON', 'alreadyCurrent': 'This priority date is already current based on the latest available bulletin trend.', 'notEnough': 'Not enough movement data to generate a forecast.', 'retro': 'Recent trend does not support a forward forecast right now.', 'noData': 'No visa bulletin data loaded.', 'consulateCapacity': 'consulate capacity can still move this window'}, 'vi': {'label': 'Tiếng Việt', 'flag': '🇻🇳', 'brand': 'VISA FORECAST', 'sub': 'U.S. Department of State · Visa Bulletin Analysis', 'language': 'LANGUAGE', 'catType': 'CATEGORY', 'prefCat': 'PREFERENCE', 'region': 'REGION', 'consulate': 'INTERVIEW LOCATION', 'chartType': 'CHART', 'finalAction': 'Final Action', 'datesForFiling': 'Dates for Filing', 'priorityDate': 'PRIORITY DATE', 'confidence': 'CONFIDENCE', 'history': 'BULLETINS', 'nvcCompleteDate': 'NVC COMPLETE DATE', 'runBtn': 'GENERATE FORECAST', 'heroTitle': 'Visa Bulletin Forecast', 'months': 'months', 'categories': 'categories', 'consulates': 'consulates', 'liveData': 'LIVE', 'employmentBased': 'Employment', 'familyBased': 'Family', 'immediateRelative': 'IR / CR', 'irNote': 'Immediate relative visas are always current.', 'irExplain': 'After NVC complete or documentarily qualified status, the interview depends on the wait time at the selected consulate.', 'nvcComplete': 'NVC COMPLETE', 'avgWaitTime': 'WAIT', 'interviewStart': 'INTERVIEW START', 'interviewEnd': 'INTERVIEW END', 'days': 'days', 'interviewForecast': 'INTERVIEW FORECAST', 'startingPoint': 'STARTING POINT', 'estimatedWindow': 'ESTIMATED WINDOW', 'startingPointCopy': 'NVC complete or documentarily qualified', 'estimatedWindowCopy': 'based on the selected consulate wait time', 'address': 'Address', 'consulateNote': 'Notes', 'estimatedScheduling': 'Estimated scheduling', 'mapView': 'Open in Maps ↗', 'daysToCurrent': 'DAYS REMAINING', 'avgMovement': 'AVG. MOVEMENT', 'currentBy': 'EST. CURRENT', 'interviewWindow': 'INTERVIEW WINDOW', 'cutoffProgression': 'CUTOFF DATE PROGRESSION', 'forecast': 'Forecast', 'movement': 'Data', 'exportTab': 'Export', 'bulletinsLoaded': 'bulletins', 'projectedWindow': 'PROJECTED INTERVIEW WINDOW', 'basedOn': 'Based on', 'monthsOf': 'months of data ·', 'confidenceWord': 'confidence', 'becomeCurrent': 'Become current', 'monthsFromNow': 'months from now', 'interviewSched': 'Interview scheduling', 'nvcNote': 'Includes 2–6 mo NVC buffer', 'mean': 'Mean', 'median': 'Median', 'stddev': 'Std dev', 'bulletinData': 'Download bulletin data CSV', 'forecastReport': 'Download forecast JSON', 'alreadyCurrent': 'This priority date is already current based on the latest available bulletin trend.', 'notEnough': 'Not enough movement data to generate a forecast.', 'retro': 'Recent trend does not support a forward forecast right now.', 'noData': 'No visa bulletin data loaded.', 'consulateCapacity': 'consulate capacity can still move this window'}, 'pt': {'label': 'Português', 'flag': '🇧🇷', 'brand': 'VISA FORECAST', 'sub': 'U.S. Department of State · Visa Bulletin Analysis', 'language': 'LANGUAGE', 'catType': 'CATEGORY', 'prefCat': 'PREFERENCE', 'region': 'REGION', 'consulate': 'INTERVIEW LOCATION', 'chartType': 'CHART', 'finalAction': 'Final Action', 'datesForFiling': 'Dates for Filing', 'priorityDate': 'PRIORITY DATE', 'confidence': 'CONFIDENCE', 'history': 'BULLETINS', 'nvcCompleteDate': 'NVC COMPLETE DATE', 'runBtn': 'GENERATE FORECAST', 'heroTitle': 'Visa Bulletin Forecast', 'months': 'months', 'categories': 'categories', 'consulates': 'consulates', 'liveData': 'LIVE', 'employmentBased': 'Employment', 'familyBased': 'Family', 'immediateRelative': 'IR / CR', 'irNote': 'Immediate relative visas are always current.', 'irExplain': 'After NVC complete or documentarily qualified status, the interview depends on the wait time at the selected consulate.', 'nvcComplete': 'NVC COMPLETE', 'avgWaitTime': 'WAIT', 'interviewStart': 'INTERVIEW START', 'interviewEnd': 'INTERVIEW END', 'days': 'days', 'interviewForecast': 'INTERVIEW FORECAST', 'startingPoint': 'STARTING POINT', 'estimatedWindow': 'ESTIMATED WINDOW', 'startingPointCopy': 'NVC complete or documentarily qualified', 'estimatedWindowCopy': 'based on the selected consulate wait time', 'address': 'Address', 'consulateNote': 'Notes', 'estimatedScheduling': 'Estimated scheduling', 'mapView': 'Open in Maps ↗', 'daysToCurrent': 'DAYS REMAINING', 'avgMovement': 'AVG. MOVEMENT', 'currentBy': 'EST. CURRENT', 'interviewWindow': 'INTERVIEW WINDOW', 'cutoffProgression': 'CUTOFF DATE PROGRESSION', 'forecast': 'Forecast', 'movement': 'Data', 'exportTab': 'Export', 'bulletinsLoaded': 'bulletins', 'projectedWindow': 'PROJECTED INTERVIEW WINDOW', 'basedOn': 'Based on', 'monthsOf': 'months of data ·', 'confidenceWord': 'confidence', 'becomeCurrent': 'Become current', 'monthsFromNow': 'months from now', 'interviewSched': 'Interview scheduling', 'nvcNote': 'Includes 2–6 mo NVC buffer', 'mean': 'Mean', 'median': 'Median', 'stddev': 'Std dev', 'bulletinData': 'Download bulletin data CSV', 'forecastReport': 'Download forecast JSON', 'alreadyCurrent': 'This priority date is already current based on the latest available bulletin trend.', 'notEnough': 'Not enough movement data to generate a forecast.', 'retro': 'Recent trend does not support a forward forecast right now.', 'noData': 'No visa bulletin data loaded.', 'consulateCapacity': 'consulate capacity can still move this window'}}
+
+st.markdown('''
 <style>
-@import url('https://fonts.googleapis.com/css2?family=Instrument+Serif&family=JetBrains+Mono:wght@400;500;600&family=Karla:wght@400;500;600;700&display=swap');
-
-:root{
-    --bg:#0a0a0a;
-    --panel:#0e0e0e;
-    --card:#101010;
-    --line:#1a1a1a;
-    --text:#cccccc;
-    --muted:#444444;
-    --accent:#caa072;
-}
-html, body, [class*="css"]  { font-family:'Karla', sans-serif; }
+@import url("https://fonts.googleapis.com/css2?family=Instrument+Serif&family=JetBrains+Mono:wght@400;500;600&family=Karla:wght@400;500;600;700&display=swap");
+:root{--bg:#0a0a0a;--line:#1a1a1a;--text:#cccccc;--muted:#444444;--accent:#caa072;}
+html, body, [class*="css"] { font-family:"Karla", sans-serif; }
 .stApp { background: var(--bg); color: var(--text); }
 [data-testid="stSidebar"] { background: #0a0a0a; border-right: 1px solid var(--line); }
 [data-testid="stSidebar"] > div:first-child { padding-top: 0.8rem; }
-section[data-testid="stSidebar"] .stSelectbox label,
-section[data-testid="stSidebar"] .stDateInput label,
-section[data-testid="stSidebar"] .stSlider label,
-section[data-testid="stSidebar"] .stRadio label {
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 0.64rem !important;
-    letter-spacing: .11em;
-    color: var(--muted) !important;
-    font-weight: 600;
-}
-div[data-baseweb="select"] > div,
-.stDateInput > div > div,
-.stTextInput > div > div {
-    background: var(--panel);
-    border: 1px solid var(--line);
-}
-.stButton > button {
-    width: 100%;
-    background: #fff;
-    color: #000;
-    border: none;
-    border-radius: 0;
-    font-size: 0.76rem;
-    font-weight: 700;
-    letter-spacing: .10em;
-    min-height: 2.7rem;
-}
+section[data-testid="stSidebar"] .stSelectbox label, section[data-testid="stSidebar"] .stDateInput label, section[data-testid="stSidebar"] .stSlider label, section[data-testid="stSidebar"] .stRadio label { font-family: "JetBrains Mono", monospace; font-size: 0.64rem !important; letter-spacing: .11em; color: var(--muted) !important; font-weight: 600; }
+div[data-baseweb="select"] > div, .stDateInput > div > div { background: #0e0e0e; border: 1px solid var(--line); }
+.stButton > button { width: 100%; background: #fff; color: #000; border: none; border-radius: 0; font-size: 0.76rem; font-weight: 700; letter-spacing: .10em; min-height: 2.7rem; }
 .sidebar-brand{ border-bottom:1px solid var(--line); padding-bottom:0.9rem; margin-bottom:0.9rem; }
-.brand-kicker{ font-family:'JetBrains Mono', monospace; font-size:.70rem; letter-spacing:.18em; color:#fff; font-weight:600; }
+.brand-kicker{ font-family:"JetBrains Mono", monospace; font-size:.70rem; letter-spacing:.18em; color:#fff; font-weight:600; }
 .brand-sub{ font-size:.70rem; color:var(--muted); line-height:1.5; margin-top:.2rem; }
-.hero-title{ font-family:'Instrument Serif', serif; font-size:3rem; line-height:1.02; color:#fff; font-weight:400; letter-spacing:-.03em; margin:0; }
-.hero-copy{ font-size:.96rem; color:#555; line-height:1.85; max-width:560px; margin-top:.65rem; }
+.hero-title{ font-family:"Instrument Serif", serif; font-size:3rem; line-height:1.02; color:#fff; font-weight:400; letter-spacing:-.03em; margin:0; }
 .mini-stat{ border:1px solid var(--line); padding:1rem 1.1rem; height:100%; }
-.mini-stat .num{ font-family:'Instrument Serif', serif; font-size:2rem; color:#fff; }
+.mini-stat .num{ font-family:"Instrument Serif", serif; font-size:2rem; color:#fff; }
 .mini-stat .sub{ font-size:.67rem; color:#444; text-transform:uppercase; letter-spacing:.08em; margin-top:.15rem; }
 .divider-head{ display:flex; align-items:baseline; justify-content:space-between; margin-bottom:.25rem; border-bottom:1px solid var(--line); padding-bottom:.75rem; }
-.kicker{ font-family:'JetBrains Mono', monospace; font-size:.62rem; color:#444; letter-spacing:.10em; text-transform:uppercase; }
-.live-pill{ font-family:'JetBrains Mono', monospace; font-size:.60rem; letter-spacing:.14em; color:var(--accent); border:1px solid rgba(202,160,114,.2); padding:.30rem .65rem; }
+.kicker{ font-family:"JetBrains Mono", monospace; font-size:.62rem; color:#444; letter-spacing:.10em; text-transform:uppercase; }
+.live-pill{ font-family:"JetBrains Mono", monospace; font-size:.60rem; letter-spacing:.14em; color:var(--accent); border:1px solid rgba(202,160,114,.2); padding:.30rem .65rem; }
 .metric-shell{ border:1px solid var(--line); padding:.95rem 1rem; }
 .metric-l{ font-size:.56rem; color:#444; text-transform:uppercase; letter-spacing:.11em; font-weight:600; }
-.metric-v{ font-family:'JetBrains Mono', monospace; color:#fff; margin-top:.28rem; }
+.metric-v{ font-family:"JetBrains Mono", monospace; color:#fff; margin-top:.28rem; }
 .section-shell{ border:1px solid var(--line); padding:1rem 1.05rem .6rem 1.05rem; margin-bottom:1rem; }
 .consulate-shell{ border:1px solid var(--line); margin-top:1rem; }
 .consulate-top{ display:flex; align-items:center; justify-content:space-between; padding:.95rem 1.15rem; border-bottom:1px solid var(--line); background:#0e0e0e; }
@@ -199,85 +147,32 @@ div[data-baseweb="select"] > div,
 .cons-value{ font-size:.75rem; color:#777; line-height:1.55; }
 .small-muted{ font-size:.72rem; color:#555; }
 </style>
-""", unsafe_allow_html=True)
-
+''', unsafe_allow_html=True)
 
 def accent_for_case(case_type: str) -> str:
-    if case_type == "IR / CR":
+    if case_type == "ir":
         return "#2980b9"
-    if case_type == "Family":
+    if case_type == "family":
         return "#8e44ad"
     return "#caa072"
-
 
 def parse_wait_time(wait_str: str) -> tuple[int, int]:
     nums = re.findall(r"\d+", wait_str or "")
     if len(nums) >= 2:
         return int(nums[0]), int(nums[1])
     if len(nums) == 1:
-        val = int(nums[0])
-        return val, val
+        return int(nums[0]), int(nums[0])
     return 60, 120
-
 
 def metric_block(label: str, value: str, border_color: Optional[str] = None):
     border_style = f"border-left:3px solid {border_color};" if border_color else ""
-    st.markdown(
-        f"""
-        <div class="metric-shell" style="{border_style}">
-            <div class="metric-l">{label}</div>
-            <div class="metric-v">{value}</div>
-        </div>
-        """,
-        unsafe_allow_html=True,
-    )
+    st.markdown(f'<div class="metric-shell" style="{border_style}"><div class="metric-l">{label}</div><div class="metric-v">{value}</div></div>', unsafe_allow_html=True)
 
-
-def consulate_block(consulate: dict, est_early: Optional[datetime], est_late: Optional[datetime], accent: str):
+def consulate_block(consulate: dict, est_early: Optional[datetime], est_late: Optional[datetime], accent: str, tr: dict):
     footer = ""
     if est_early and est_late:
-        footer = f"""
-        <div style="border-top:1px solid #1a1a1a;padding:.8rem 1.15rem;display:flex;align-items:center;justify-content:space-between;">
-            <div class="cons-label" style="margin:0;">Estimated scheduling</div>
-            <div style="font-family:JetBrains Mono,monospace;font-size:.86rem;color:{accent};">
-                {est_early.strftime("%b %Y")} — {est_late.strftime("%b %Y")}
-            </div>
-        </div>
-        """
-
-    st.markdown(
-        f"""
-        <div class="consulate-shell">
-            <div class="consulate-top">
-                <div style="display:flex;align-items:center;gap:.65rem;">
-                    <div style="font-size:1.15rem;">{consulate.get("flag","📍")}</div>
-                    <div>
-                        <div style="font-family:'Instrument Serif',serif;font-size:1.15rem;color:#fff;line-height:1;">{consulate["city"]}</div>
-                        <div style="font-family:'JetBrains Mono',monospace;font-size:.62rem;color:#444;margin-top:.18rem;">U.S. {consulate["name"]}</div>
-                    </div>
-                </div>
-                <a href="https://www.google.com/maps/search/?api=1&query={consulate['lat']},{consulate['lng']}" target="_blank" style="font-family:'JetBrains Mono',monospace;font-size:.62rem;color:{accent};text-decoration:none;border:1px solid {accent}33;padding:.35rem .7rem;letter-spacing:.05em;">Mapa ↗</a>
-            </div>
-            <div class="cons-grid">
-                <div class="cons-cell">
-                    <div class="cons-label">Dirección</div>
-                    <div class="cons-value">{consulate["addr"]}</div>
-                </div>
-                <div class="cons-cell">
-                    <div class="cons-label">Espera</div>
-                    <div class="cons-value" style="color:{accent};">{consulate["wait"]}</div>
-                </div>
-                <div class="cons-cell">
-                    <div class="cons-label">Notas</div>
-                    <div class="cons-value">{consulate["note"]}</div>
-                </div>
-            </div>
-            {footer}
-        </div>
-        """,
-        unsafe_allow_html=True,
-    )
-
+        footer = f'<div style="border-top:1px solid #1a1a1a;padding:.8rem 1.15rem;display:flex;align-items:center;justify-content:space-between;"><div class="cons-label" style="margin:0;">{tr["estimatedScheduling"]}</div><div style="font-family:JetBrains Mono,monospace;font-size:.86rem;color:{accent};">{est_early.strftime("%b %Y")} — {est_late.strftime("%b %Y")}</div></div>'
+    st.markdown(f'<div class="consulate-shell"><div class="consulate-top"><div style="display:flex;align-items:center;gap:.65rem;"><div style="font-size:1.15rem;">{consulate.get("flag","📍")}</div><div><div style="font-family:Instrument Serif,serif;font-size:1.15rem;color:#fff;line-height:1;">{consulate["city"]}</div><div style="font-family:JetBrains Mono,monospace;font-size:.62rem;color:#444;margin-top:.18rem;">U.S. {consulate["name"]}</div></div></div><a href="https://www.google.com/maps/search/?api=1&query={consulate["lat"]},{consulate["lng"]}" target="_blank" style="font-family:JetBrains Mono,monospace;font-size:.62rem;color:{accent};text-decoration:none;border:1px solid {accent}33;padding:.35rem .7rem;letter-spacing:.05em;">{tr["mapView"]}</a></div><div class="cons-grid"><div class="cons-cell"><div class="cons-label">{tr["address"]}</div><div class="cons-value">{consulate["addr"]}</div></div><div class="cons-cell"><div class="cons-label">{tr["avgWaitTime"]}</div><div class="cons-value" style="color:{accent};">{consulate["wait"]}</div></div><div class="cons-cell"><div class="cons-label">{tr["consulateNote"]}</div><div class="cons-value">{consulate["note"]}</div></div></div>{footer}</div>', unsafe_allow_html=True)
 
 @st.cache_data(ttl=3600, show_spinner=False)
 def fetch_links(n: int = 13):
@@ -301,7 +196,6 @@ def fetch_links(n: int = 13):
     unique.sort(key=lambda x: (x["yr"], x["mi"]), reverse=True)
     return unique[:n]
 
-
 def parse_date(raw: str) -> Optional[datetime]:
     raw = raw.strip().upper()
     if raw in ("C", "CURRENT", ""):
@@ -315,7 +209,6 @@ def parse_date(raw: str) -> Optional[datetime]:
             pass
     return None
 
-
 @st.cache_data(ttl=3600, show_spinner=False)
 def parse_page(url: str):
     s = requests.Session()
@@ -325,7 +218,6 @@ def parse_page(url: str):
     soup = BeautifulSoup(r.text, "html.parser")
     tables = soup.find_all("table")
     res = {"final_action": {}, "dates_for_filing": {}}
-
     for table in tables:
         rows = table.find_all("tr")
         if len(rows) < 2:
@@ -333,25 +225,17 @@ def parse_page(url: str):
         hdr = [h.get_text(strip=True).lower() for h in rows[0].find_all(["th", "td"])]
         prev = table.find_previous(["h2", "h3", "h4", "p", "strong"])
         target = res["dates_for_filing"] if prev and "filing" in prev.get_text(strip=True).lower() else res["final_action"]
-
         col_map = {}
         for i, h in enumerate(hdr):
             if i == 0:
                 continue
-            if "china" in h:
-                col_map[i] = "china_mainland"
-            elif "india" in h:
-                col_map[i] = "india"
-            elif "mexico" in h:
-                col_map[i] = "mexico"
-            elif "philippines" in h:
-                col_map[i] = "philippines"
-            elif any(x in h for x in ["all", "world", "other"]):
-                col_map[i] = "all"
-
+            if "china" in h: col_map[i] = "china_mainland"
+            elif "india" in h: col_map[i] = "india"
+            elif "mexico" in h: col_map[i] = "mexico"
+            elif "philippines" in h: col_map[i] = "philippines"
+            elif any(x in h for x in ["all", "world", "other"]): col_map[i] = "all"
         if not col_map:
             continue
-
         for row in rows[1:]:
             cells = row.find_all(["th", "td"])
             if not cells:
@@ -361,11 +245,10 @@ def parse_page(url: str):
             if not cat_key:
                 continue
             target.setdefault(cat_key, {})
-            for col_index, region in col_map.items():
+            for col_index, reg in col_map.items():
                 if col_index < len(cells):
-                    target[cat_key][region] = cells[col_index].get_text(strip=True)
+                    target[cat_key][reg] = cells[col_index].get_text(strip=True)
     return res
-
 
 def fetch_bulletins(n: int = 13):
     links = fetch_links(n)
@@ -378,55 +261,35 @@ def fetch_bulletins(n: int = 13):
             continue
         for table_type, cats in data.items():
             for cat, regs in cats.items():
-                for region, cutoff in regs.items():
-                    records.append(
-                        {
-                            "bulletin_date": bulletin_date,
-                            "table_type": table_type,
-                            "category": cat,
-                            "region": region,
-                            "cutoff_raw": cutoff,
-                            "cutoff_date": parse_date(cutoff),
-                        }
-                    )
+                for reg, cutoff in regs.items():
+                    records.append({"bulletin_date": bulletin_date, "table_type": table_type, "category": cat, "region": reg, "cutoff_raw": cutoff, "cutoff_date": parse_date(cutoff)})
     df = pd.DataFrame(records)
     if not df.empty:
         df.sort_values(["category", "region", "bulletin_date"], inplace=True)
     return df
 
-
 def movement(df: pd.DataFrame, category: str, region: str, table_type: str):
-    mask = (
-        (df["category"] == category)
-        & (df["region"] == region)
-        & (df["table_type"] == table_type)
-        & df["cutoff_date"].notna()
-    )
+    mask = (df["category"] == category) & (df["region"] == region) & (df["table_type"] == table_type) & df["cutoff_date"].notna()
     out = df.loc[mask].copy().sort_values("bulletin_date")
     out["prev"] = out["cutoff_date"].shift(1)
     out["move"] = (out["cutoff_date"] - out["prev"]).dt.days
     return out
 
-
 def forecast(df: pd.DataFrame, category: str, region: str, priority_date: datetime, table_type: str, confidence: float):
     mv = movement(df, category, region, table_type).dropna(subset=["move"])
     if mv.empty:
         return {"status": "NO_DATA"}
-
     last_row = mv.iloc[-1]
     last_cutoff = last_row["cutoff_date"]
     last_bulletin = last_row["bulletin_date"]
     days_remaining = (priority_date - last_cutoff).days
-
     if days_remaining <= 0:
-        return {"status": "CURRENT", "last_cutoff": last_cutoff, "last_bulletin": last_bulletin}
-
+        return {"status": "CURRENT"}
     movements = mv["move"].astype(float).values
     avg_move = float(np.mean(movements))
     std_move = float(np.std(movements, ddof=1)) if len(movements) > 1 else 0.0
     if avg_move <= 0:
         return {"status": "RETROGRESSION"}
-
     months_est = days_remaining / avg_move
     projected_current = last_bulletin + timedelta(days=months_est * 30.44)
     z = {0.8: 1.28, 0.9: 1.645, 0.95: 1.96}.get(confidence, 1.645)
@@ -436,129 +299,68 @@ def forecast(df: pd.DataFrame, category: str, region: str, priority_date: dateti
     current_late = last_bulletin + timedelta(days=(days_remaining / late_rate) * 30.44)
     interview_early = current_early + timedelta(days=60)
     interview_late = current_late + timedelta(days=180)
-
-    return {
-        "status": "OK",
-        "days_remaining": int(days_remaining),
-        "avg_move": round(avg_move),
-        "projected_current": projected_current,
-        "current_early": current_early,
-        "current_late": current_late,
-        "interview_early": interview_early,
-        "interview_late": interview_late,
-        "months_est": max(1, int(round(months_est))),
-        "n": len(movements),
-        "last_cutoff": last_cutoff,
-        "last_bulletin": last_bulletin,
-        "std_move": round(std_move, 1),
-    }
-
+    return {"status":"OK","days_remaining":int(days_remaining),"avg_move":round(avg_move),"projected_current":projected_current,"interview_early":interview_early,"interview_late":interview_late,"months_est":max(1,int(round(months_est))),"n":len(movements),"std_move":round(std_move,1),"current_early":current_early,"current_late":current_late}
 
 def build_progression_chart(mv: pd.DataFrame, priority_date: datetime, fc: dict, accent: str):
     mv = mv.copy().dropna(subset=["cutoff_date"])
     fig = go.Figure()
-
     if fc.get("status") == "OK":
         band_x = [fc["current_early"], fc["current_late"], fc["current_late"], fc["current_early"]]
         band_y = [priority_date - timedelta(days=35), priority_date - timedelta(days=35), priority_date + timedelta(days=35), priority_date + timedelta(days=35)]
         fig.add_trace(go.Scatter(x=band_x, y=band_y, fill="toself", mode="lines", line=dict(color="rgba(0,0,0,0)"), fillcolor="rgba(202,160,114,0.10)", hoverinfo="skip", name="Forecast range"))
-
     fig.add_trace(go.Scatter(x=mv["bulletin_date"], y=mv["cutoff_date"], mode="lines+markers", name="Cutoff trend", line=dict(width=2.6, color=accent), marker=dict(size=6, color="#0a0a0a", line=dict(width=1.5, color=accent))))
     fig.add_hline(y=priority_date, line_color="#c0392b", line_dash="dash", line_width=1.2)
-
-    if fc.get("status") == "OK":
-        fig.add_trace(go.Scatter(x=[fc["last_bulletin"], fc["projected_current"]], y=[fc["last_cutoff"], priority_date], mode="lines", name="Projected path", line=dict(width=2.2, dash="dot", color="#6f532f")))
-        fig.add_trace(go.Scatter(x=[fc["current_early"], fc["projected_current"], fc["current_late"]], y=[priority_date, priority_date, priority_date], mode="markers+lines", name="Estimated current window", line=dict(width=2.4, color=accent), marker=dict(size=[7, 10, 7], color=[accent, accent, accent])))
-
-    fig.update_layout(
-        height=380,
-        margin=dict(l=12, r=12, t=8, b=8),
-        paper_bgcolor="#0a0a0a",
-        plot_bgcolor="#0a0a0a",
-        font=dict(color="#777", family="Karla, sans-serif"),
-        legend=dict(orientation="h", y=1.07, x=0),
-        xaxis=dict(gridcolor="#1a1a1a", title=None),
-        yaxis=dict(gridcolor="#1a1a1a", title=None),
-    )
+    fig.update_layout(height=380, margin=dict(l=12, r=12, t=8, b=8), paper_bgcolor="#0a0a0a", plot_bgcolor="#0a0a0a", font=dict(color="#777", family="Karla, sans-serif"), xaxis=dict(gridcolor="#1a1a1a", title=None), yaxis=dict(gridcolor="#1a1a1a", title=None))
     return fig
 
-
 def build_consulate_map(posts: list[dict], selected_id: str, accent: str):
+    if not posts:
+        return go.Figure()
     df_map = pd.DataFrame(posts)
     df_map["size"] = np.where(df_map["id"] == selected_id, 18, 11)
     fig = go.Figure()
-    fig.add_trace(
-        go.Scattermap(
-            lat=df_map["lat"],
-            lon=df_map["lng"],
-            mode="markers",
-            text=df_map["city"] + " · " + df_map["wait"],
-            hovertemplate="%{text}<extra></extra>",
-            marker=dict(size=df_map["size"], color=np.where(df_map["id"] == selected_id, accent, "#7a7a7a")),
-        )
-    )
-    fig.update_layout(
-        height=340,
-        margin=dict(l=0, r=0, t=0, b=0),
-        paper_bgcolor="#0a0a0a",
-        map=dict(style="carto-darkmatter", zoom=1.35, center=dict(lat=float(df_map["lat"].mean()), lon=float(df_map["lng"].mean()))),
-        font=dict(color="#777"),
-    )
+    fig.add_trace(go.Scattermap(lat=df_map["lat"], lon=df_map["lng"], mode="markers", text=df_map["city"] + " · " + df_map["wait"], hovertemplate="%{text}<extra></extra>", marker=dict(size=df_map["size"], color=np.where(df_map["id"] == selected_id, accent, "#7a7a7a"))))
+    fig.update_layout(height=340, margin=dict(l=0, r=0, t=0, b=0), paper_bgcolor="#0a0a0a", map=dict(style="carto-darkmatter", zoom=1.35, center=dict(lat=float(df_map["lat"].mean()), lon=float(df_map["lng"].mean()))), font=dict(color="#777"))
     return fig
 
-
 with st.sidebar:
-    st.markdown(
-        """
-        <div class="sidebar-brand">
-            <div class="brand-kicker">VISA FORECAST</div>
-            <div class="brand-sub">Depto. de Estado · Boletín de Visas</div>
-        </div>
-        """,
-        unsafe_allow_html=True,
-    )
+    lang_code = st.selectbox("LANGUAGE", list(TRANSLATIONS.keys()), format_func=lambda k: f'{TRANSLATIONS[k]["flag"]} {TRANSLATIONS[k]["label"]}', key="lang_code")
+    tr = TRANSLATIONS[lang_code]
 
-    case_type = st.radio("Categoría", ["IR / CR", "Familia", "Empleo"], horizontal=True, key="case_type")
+    st.markdown(f'<div class="sidebar-brand"><div class="brand-kicker">{tr["brand"]}</div><div class="brand-sub">{tr["sub"]}</div></div>', unsafe_allow_html=True)
+    case_type = st.radio(tr["catType"], ["ir", "family", "employment"], horizontal=True, format_func=lambda v: tr["immediateRelative"] if v=="ir" else tr["familyBased"] if v=="family" else tr["employmentBased"], key="case_type")
 
-    if case_type == "IR / CR":
-        category = st.selectbox("Preferencia", IR_CATEGORIES, format_func=lambda c: CATEGORY_LABELS.get(c, c), key="ir_category")
-    elif case_type == "Familia":
-        category = st.selectbox("Preferencia", FAMILY_CATEGORIES, format_func=lambda c: CATEGORY_LABELS.get(c, c), key="fam_category")
+    if case_type == "ir":
+        category = st.selectbox(tr["prefCat"], IR_CATEGORIES, format_func=lambda c: CATEGORY_LABELS.get(c, c), key="ir_category")
+    elif case_type == "family":
+        category = st.selectbox(tr["prefCat"], FAMILY_CATEGORIES, format_func=lambda c: CATEGORY_LABELS.get(c, c), key="family_category")
     else:
-        category = st.selectbox("Preferencia", EMPLOYMENT_CATEGORIES, format_func=lambda c: CATEGORY_LABELS.get(c, c), key="emp_category")
+        category = st.selectbox(tr["prefCat"], EMPLOYMENT_CATEGORIES, format_func=lambda c: CATEGORY_LABELS.get(c, c), key="employment_category")
 
-    region_label = st.selectbox("Región", list(CHARGEABILITY_REGIONS.keys()), key="region_label")
+    region_label = st.selectbox(tr["region"], list(CHARGEABILITY_REGIONS.keys()), key="region_label")
     region = CHARGEABILITY_REGIONS[region_label]
-
     posts = CONSULATES.get(region, [])
-    post_label = st.selectbox("Lugar", [f'{p["city"]} — {p["name"]}' for p in posts], key="post_label") if posts else None
+    post_label = st.selectbox(tr["consulate"], [f'{p["city"]} — {p["name"]}' for p in posts], key="post_label") if posts else None
     selected_post = next((p for p in posts if f'{p["city"]} — {p["name"]}' == post_label), None)
 
-    if case_type != "IR / CR":
-        table_type = st.selectbox("Gráfico", ["final_action", "dates_for_filing"], format_func=lambda x: "Final Action" if x == "final_action" else "Dates for Filing", key="table_type")
-        priority_date = st.date_input("Priority Date", datetime(2022, 3, 15), key="priority_date")
-        confidence = st.select_slider("Confidence", [0.8, 0.9, 0.95], value=0.8, key="confidence")
-        history_months = st.slider("Bulletins", 6, 36, 13, key="history_months")
+    if case_type != "ir":
+        table_type = st.selectbox(tr["chartType"], ["final_action", "dates_for_filing"], format_func=lambda x: tr["finalAction"] if x=="final_action" else tr["datesForFiling"], key="table_type")
+        priority_date = st.date_input(tr["priorityDate"], datetime(2022,3,15), key="priority_date")
+        confidence = st.select_slider(tr["confidence"], [0.8,0.9,0.95], value=0.8, key="confidence")
+        history_months = st.slider(tr["history"], 6, 36, 13, key="history_months")
         nvc_complete_date = None
     else:
         table_type = "final_action"
-        history_months = 13
-        confidence = 0.8
-        nvc_complete_date = st.date_input("NVC complete date", datetime.today().date(), key="nvc_complete_date")
         priority_date = datetime.today().date()
+        confidence = 0.8
+        history_months = 13
+        nvc_complete_date = st.date_input(tr["nvcCompleteDate"], datetime.today().date(), key="nvc_complete_date")
 
-    run = st.button("GENERAR", use_container_width=True, type="primary")
+    run = st.button(tr["runBtn"], use_container_width=True, type="primary")
 
 accent = accent_for_case(case_type)
 
-st.markdown(
-    """
-    <div style="max-width:620px;margin-bottom:2rem;">
-        <h1 class="hero-title">Visa Bulletin Forecast</h1>
-    </div>
-    """,
-    unsafe_allow_html=True,
-)
+st.markdown(f'<div style="max-width:620px;margin-bottom:2rem;"><h1 class="hero-title">{tr["heroTitle"]}</h1></div>', unsafe_allow_html=True)
 
 if "has_run" not in st.session_state:
     st.session_state["has_run"] = False
@@ -568,129 +370,92 @@ if run:
 if not st.session_state["has_run"]:
     a, b, c = st.columns(3)
     with a:
-        st.markdown('<div class="mini-stat"><div class="num">12+</div><div class="sub">months</div></div>', unsafe_allow_html=True)
+        st.markdown(f'<div class="mini-stat"><div class="num">12+</div><div class="sub">{tr["months"]}</div></div>', unsafe_allow_html=True)
     with b:
-        st.markdown('<div class="mini-stat"><div class="num">15</div><div class="sub">categories</div></div>', unsafe_allow_html=True)
+        st.markdown(f'<div class="mini-stat"><div class="num">15</div><div class="sub">{tr["categories"]}</div></div>', unsafe_allow_html=True)
     with c:
-        st.markdown('<div class="mini-stat"><div class="num">80+</div><div class="sub">consulates</div></div>', unsafe_allow_html=True)
+        st.markdown(f'<div class="mini-stat"><div class="num">80+</div><div class="sub">{tr["consulates"]}</div></div>', unsafe_allow_html=True)
     st.stop()
 
-if case_type == "IR / CR":
-    st.markdown(
-        f"""
-        <div class="divider-head">
-            <div>
-                <div style="font-family:'Instrument Serif',serif;font-size:1.9rem;color:#fff;">{CATEGORY_LABELS.get(category, category)}</div>
-                <div class="kicker">{region_label}{" · " + selected_post["city"] if selected_post else ""} · 12 boletines</div>
-            </div>
-            <div class="live-pill">VIVO</div>
-        </div>
-        """,
-        unsafe_allow_html=True,
-    )
-
+if case_type == "ir":
+    st.markdown(f'<div class="divider-head"><div><div style="font-family:Instrument Serif, serif;font-size:1.9rem;color:#fff;">{CATEGORY_LABELS.get(category, category)}</div><div class="kicker">{region_label}{" · " + selected_post["city"] if selected_post else ""}</div></div><div class="live-pill">{tr["liveData"]}</div></div>', unsafe_allow_html=True)
     wait_early, wait_late = parse_wait_time(selected_post["wait"]) if selected_post else (60, 120)
     nvc_complete_dt = datetime.combine(nvc_complete_date, datetime.min.time())
     interview_early = nvc_complete_dt + timedelta(days=wait_early)
     interview_late = nvc_complete_dt + timedelta(days=wait_late)
 
-    st.markdown(
-        """
-        <div class="section-shell">
-            <div style="font-family:'Instrument Serif',serif;font-size:1.25rem;color:#fff;margin-bottom:.45rem;">Las visas IR/CR siempre están al día.</div>
-            <div class="small-muted">Después de NVC complete o documentarily qualified, la entrevista depende del tiempo de espera del consulado seleccionado.</div>
-        </div>
-        """,
-        unsafe_allow_html=True,
-    )
+    st.markdown(f'<div class="section-shell"><div style="font-family:Instrument Serif, serif;font-size:1.25rem;color:#fff;margin-bottom:.45rem;">{tr["irNote"]}</div><div class="small-muted">{tr["irExplain"]}</div></div>', unsafe_allow_html=True)
 
     c1, c2, c3, c4 = st.columns(4)
-    with c1:
-        metric_block("NVC COMPLETE", nvc_complete_dt.strftime("%b %d, %Y"), "#3498db")
-    with c2:
-        metric_block("ESPERA", f"{wait_early}–{wait_late} días", "#2ecc71")
-    with c3:
-        metric_block("ENTREVISTA INICIO", interview_early.strftime("%b %Y"), "#f39c12")
-    with c4:
-        metric_block("ENTREVISTA FIN", interview_late.strftime("%b %Y"), "#e74c3c")
+    with c1: metric_block(tr["nvcComplete"], nvc_complete_dt.strftime("%b %d, %Y"), "#3498db")
+    with c2: metric_block(tr["avgWaitTime"], f"{wait_early}–{wait_late} {tr['days']}", "#2ecc71")
+    with c3: metric_block(tr["interviewStart"], interview_early.strftime("%b %Y"), "#f39c12")
+    with c4: metric_block(tr["interviewEnd"], interview_late.strftime("%b %Y"), "#e74c3c")
 
-    st.markdown(
-        f"""
-        <div class="section-shell">
-            <div class="kicker" style="margin-bottom:.6rem;">PRONÓSTICO DE ENTREVISTA</div>
-            <div class="small-muted" style="margin-bottom:.85rem;">Este cálculo toma como punto de partida tu fecha de NVC complete y luego aplica la espera del consulado seleccionado.</div>
-            <div style="display:grid;grid-template-columns:1fr 1fr;gap:1px;">
-                <div style="background:#111;padding:.95rem 1rem;">
-                    <div class="metric-l">PUNTO DE PARTIDA</div>
-                    <div style="font-family:'JetBrains Mono',monospace;color:#fff;margin-top:.3rem;">{nvc_complete_dt.strftime("%B %d, %Y")}</div>
-                    <div class="small-muted" style="margin-top:.15rem;">NVC complete o documentarily qualified</div>
-                </div>
-                <div style="background:#111;padding:.95rem 1rem;">
-                    <div class="metric-l">VENTANA ESTIMADA</div>
-                    <div style="font-family:'JetBrains Mono',monospace;color:{accent};margin-top:.3rem;">{interview_early.strftime("%b %d, %Y")} — {interview_late.strftime("%b %d, %Y")}</div>
-                    <div class="small-muted" style="margin-top:.15rem;">basada en la espera del consulado seleccionado</div>
-                </div>
-            </div>
-        </div>
-        """,
-        unsafe_allow_html=True,
-    )
+    st.markdown(f'<div class="section-shell"><div class="kicker" style="margin-bottom:.6rem;">{tr["interviewForecast"]}</div><div class="small-muted" style="margin-bottom:.85rem;">{tr["startingPointCopy"]}</div><div style="display:grid;grid-template-columns:1fr 1fr;gap:1px;"><div style="background:#111;padding:.95rem 1rem;"><div class="metric-l">{tr["startingPoint"]}</div><div style="font-family:JetBrains Mono, monospace;color:#fff;margin-top:.3rem;">{nvc_complete_dt.strftime("%B %d, %Y")}</div><div class="small-muted" style="margin-top:.15rem;">{tr["startingPointCopy"]}</div></div><div style="background:#111;padding:.95rem 1rem;"><div class="metric-l">{tr["estimatedWindow"]}</div><div style="font-family:JetBrains Mono, monospace;color:{accent};margin-top:.3rem;">{interview_early.strftime("%b %d, %Y")} — {interview_late.strftime("%b %d, %Y")}</div><div class="small-muted" style="margin-top:.15rem;">{tr["estimatedWindowCopy"]}</div></div></div></div>', unsafe_allow_html=True)
 
     if selected_post:
-        consulate_block(selected_post, interview_early, interview_late, accent)
+        consulate_block(selected_post, interview_early, interview_late, accent, tr)
         st.plotly_chart(build_consulate_map(posts, selected_post["id"], accent), use_container_width=True)
 
+    st.markdown('<div style="position:fixed;bottom:10px;right:20px;font-size:10px;color:#555;font-family:JetBrains Mono, monospace;">github.com/roxannehernan</div>', unsafe_allow_html=True)
     st.stop()
 
-# Non-IR paths
-mapped_case_type = "Family" if case_type == "Familia" else "Employment"
-accent = accent_for_case(mapped_case_type)
 df = fetch_bulletins(history_months)
 if df.empty:
-    st.error("No visa bulletin data loaded.")
+    st.error(tr["noData"])
     st.stop()
 
 priority_dt = datetime.combine(priority_date, datetime.min.time())
 fc = forecast(df, category, region, priority_dt, table_type, confidence)
 mv = movement(df, category, region, table_type)
 
-st.markdown(
-    f"""
-    <div class="divider-head">
-        <div>
-            <div style="font-family:'Instrument Serif',serif;font-size:1.9rem;color:#fff;">{region_label} · {CATEGORY_LABELS.get(category, category)}</div>
-            <div class="kicker">{selected_post["city"] if selected_post else "No consulate selected"} · {history_months} bulletins loaded</div>
-        </div>
-        <div class="live-pill">LIVE</div>
-    </div>
-    """,
-    unsafe_allow_html=True,
-)
+st.markdown(f'<div class="divider-head"><div><div style="font-family:Instrument Serif, serif;font-size:1.9rem;color:#fff;">{region_label} · {CATEGORY_LABELS.get(category, category)}</div><div class="kicker">{selected_post["city"] if selected_post else ""} · {history_months} {tr["bulletinsLoaded"]}</div></div><div class="live-pill">{tr["liveData"]}</div></div>', unsafe_allow_html=True)
 
-if fc["status"] == "OK":
-    m1, m2, m3, m4 = st.columns(4)
-    with m1:
-        metric_block("Days remaining", f'{fc["days_remaining"]:,}')
-    with m2:
-        metric_block("Avg. movement", f'{fc["avg_move"]} d/mo')
-    with m3:
-        metric_block("Est. current", fc["projected_current"].strftime("%b %Y"))
-    with m4:
-        metric_block("Interview window", f'{fc["interview_early"].strftime("%b %Y")} — {fc["interview_late"].strftime("%b %Y")}')
+tab_forecast, tab_data, tab_export = st.tabs([tr["forecast"], tr["movement"], tr["exportTab"]])
 
-st.markdown('<div class="section-shell"><div class="kicker" style="margin-bottom:.6rem;">Cutoff date progression</div>', unsafe_allow_html=True)
-st.plotly_chart(build_progression_chart(mv, priority_dt, fc, accent), use_container_width=True)
-st.markdown("</div>", unsafe_allow_html=True)
+with tab_forecast:
+    if fc["status"] == "CURRENT":
+        st.success(tr["alreadyCurrent"])
+    elif fc["status"] == "NO_DATA":
+        st.warning(tr["notEnough"])
+    elif fc["status"] == "RETROGRESSION":
+        st.warning(tr["retro"])
 
-if selected_post and fc["status"] == "OK":
-    consulate_block(selected_post, fc["interview_early"], fc["interview_late"], accent)
-    st.plotly_chart(build_consulate_map(posts, selected_post["id"], accent), use_container_width=True)
+    if fc["status"] == "OK":
+        m1, m2, m3, m4 = st.columns(4)
+        with m1: metric_block(tr["daysToCurrent"], f'{fc["days_remaining"]:,}')
+        with m2: metric_block(tr["avgMovement"], f'{fc["avg_move"]} d/mo')
+        with m3: metric_block(tr["currentBy"], fc["projected_current"].strftime("%b %Y"))
+        with m4: metric_block(tr["interviewWindow"], f'{fc["interview_early"].strftime("%b %Y")} — {fc["interview_late"].strftime("%b %Y")}')
 
-st.markdown(
-    """
-    <div style="position:fixed;bottom:10px;right:20px;font-size:10px;color:#555;font-family:'JetBrains Mono', monospace;">
-        github.com/roxannehernan
-    </div>
-    """,
-    unsafe_allow_html=True,
-)
+    st.markdown(f'<div class="section-shell"><div class="kicker" style="margin-bottom:.6rem;">{tr["cutoffProgression"]}</div>', unsafe_allow_html=True)
+    st.plotly_chart(build_progression_chart(mv, priority_dt, fc, accent), use_container_width=True)
+    st.markdown("</div>", unsafe_allow_html=True)
+
+    if selected_post and fc["status"] == "OK":
+        consulate_block(selected_post, fc["interview_early"], fc["interview_late"], accent, tr)
+        st.plotly_chart(build_consulate_map(posts, selected_post["id"], accent), use_container_width=True)
+
+    if fc["status"] == "OK":
+        st.markdown(f'<div class="section-shell"><div style="font-family:Instrument Serif, serif;font-size:1.18rem;color:#fff;margin-bottom:.45rem;">{tr["projectedWindow"]}</div><div class="small-muted" style="margin-bottom:.9rem;">{tr["basedOn"]} {fc["n"]} {tr["monthsOf"]} {int(confidence*100)}% {tr["confidenceWord"]}. {tr["nvcNote"]}</div><div style="display:grid;grid-template-columns:1fr 1fr;gap:1px;"><div style="background:#111;padding:.95rem 1rem;"><div class="metric-l">{tr["becomeCurrent"]}</div><div style="font-family:JetBrains Mono, monospace;color:#fff;margin-top:.3rem;">{fc["projected_current"].strftime("%B %Y")}</div><div class="small-muted" style="margin-top:.15rem;">{fc["months_est"]} {tr["monthsFromNow"]}</div></div><div style="background:#111;padding:.95rem 1rem;"><div class="metric-l">{tr["interviewSched"]}</div><div style="font-family:JetBrains Mono, monospace;color:{accent};margin-top:.3rem;">{fc["interview_early"].strftime("%b %Y")} — {fc["interview_late"].strftime("%b %Y")}</div><div class="small-muted" style="margin-top:.15rem;">{tr["consulateCapacity"]}</div></div></div></div>', unsafe_allow_html=True)
+
+with tab_data:
+    data_df = mv[["bulletin_date", "cutoff_date", "move"]].copy()
+    data_df.columns = ["Month", "Cutoff", "Movement"]
+    st.dataframe(data_df, hide_index=True, use_container_width=True)
+    if fc["status"] == "OK":
+        s1, s2, s3 = st.columns(3)
+        with s1: metric_block(tr["mean"], f'{fc["avg_move"]}d')
+        with s2: metric_block(tr["stddev"], f'{fc["std_move"]}d')
+        with s3:
+            med = int(pd.Series(mv["move"].dropna()).median()) if not mv["move"].dropna().empty else 0
+            metric_block(tr["median"], f'{med}d')
+
+with tab_export:
+    csv_data = df.to_csv(index=False)
+    json_data = json.dumps({"category": category, "region": region, "table_type": table_type, "priority_date": priority_dt.strftime("%Y-%m-%d"), "forecast_status": fc["status"], "projected_current": fc["projected_current"].strftime("%Y-%m-%d") if fc.get("projected_current") else None, "interview_early": fc["interview_early"].strftime("%Y-%m-%d") if fc.get("interview_early") else None, "interview_late": fc["interview_late"].strftime("%Y-%m-%d") if fc.get("interview_late") else None}, indent=2)
+    st.download_button(tr["bulletinData"], csv_data, file_name="visa_bulletin_data.csv", mime="text/csv")
+    st.download_button(tr["forecastReport"], json_data, file_name="visa_forecast.json", mime="application/json")
+
+st.markdown('<div style="position:fixed;bottom:10px;right:20px;font-size:10px;color:#555;font-family:JetBrains Mono, monospace;">github.com/roxannehernan</div>', unsafe_allow_html=True)
