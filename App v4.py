@@ -1073,3 +1073,13 @@ with tab_export:
     )
     st.download_button("Download bulletin data CSV", csv_data, file_name="visa_bulletin_data.csv", mime="text/csv")
     st.download_button("Download forecast JSON", json_data, file_name="visa_forecast.json", mime="application/json")
+
+
+st.markdown(
+    '''
+    <div style="position:fixed;bottom:10px;right:20px;font-size:10px;color:#555;font-family:'JetBrains Mono', monospace;">
+        github.com/roxannehernan
+    </div>
+    ''',
+    unsafe_allow_html=True
+)
