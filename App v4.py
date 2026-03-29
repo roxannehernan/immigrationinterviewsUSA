@@ -323,6 +323,61 @@ def build_consulate_map(posts: list[dict], selected_id: str, accent: str):
     fig.update_layout(height=340, margin=dict(l=0, r=0, t=0, b=0), paper_bgcolor="#0a0a0a", map=dict(style="carto-darkmatter", zoom=1.35, center=dict(lat=float(df_map["lat"].mean()), lon=float(df_map["lng"].mean()))), font=dict(color="#777"))
     return fig
 
+
+
+def build_timeline_html(items, accent: str):
+    parts = []
+    for idx, item in enumerate(items):
+        parts.append(f"""
+        <div style="display:flex;align-items:flex-start;gap:.8rem;flex:1;">
+            <div style="display:flex;flex-direction:column;align-items:center;min-width:16px;">
+                <div style="width:12px;height:12px;border-radius:999px;background:{accent};margin-top:4px;"></div>
+                {'<div style="width:2px;flex:1;background:#222;min-height:36px;margin-top:6px;"></div>' if idx < len(items)-1 else ''}
+            </div>
+            <div style="padding-bottom:.6rem;">
+                <div class="metric-l" style="margin-bottom:.2rem;">{item['label']}</div>
+                <div style="font-family:JetBrains Mono, monospace;color:#fff;font-size:.9rem;">{item['value']}</div>
+                <div class="small-muted" style="margin-top:.15rem;">{item.get('note','')}</div>
+            </div>
+        </div>
+        """)
+    return '<div class="section-shell">' + "".join(parts) + '</div>'
+
+def parse_wait_mid(wait_str: str) -> int:
+    low, high = parse_wait_time(wait_str)
+    return int(round((low + high) / 2))
+
+def consulate_comparison(posts: list[dict], selected_post: Optional[dict]):
+    if not posts:
+        return None
+    ranked = sorted(posts, key=lambda p: parse_wait_mid(p["wait"]))
+    avg = round(sum(parse_wait_mid(p["wait"]) for p in posts) / len(posts))
+    return {
+        "selected": selected_post["city"] + " · " + selected_post["wait"] if selected_post else "—",
+        "fastest": ranked[0]["city"] + " · " + ranked[0]["wait"],
+        "slowest": ranked[-1]["city"] + " · " + ranked[-1]["wait"],
+        "average": f"{avg} days",
+    }
+
+def category_help_text(category: str) -> str:
+    mapping = {
+        "F1": "Family first preference for unmarried sons and daughters of U.S. citizens.",
+        "F2A": "Spouses and children of lawful permanent residents.",
+        "F2B": "Unmarried adult sons and daughters of lawful permanent residents.",
+        "F3": "Married sons and daughters of U.S. citizens.",
+        "F4": "Brothers and sisters of adult U.S. citizens.",
+        "EB1": "Priority workers including extraordinary ability and multinational managers.",
+        "EB2": "Advanced degree professionals and exceptional ability.",
+        "EB3": "Skilled workers, professionals, and some other workers.",
+        "EB4": "Special immigrants.",
+        "EB5": "Immigrant investors.",
+        "IR1": "Spouse of a U.S. citizen.",
+        "CR1": "Conditional spouse of a U.S. citizen.",
+        "IR2": "Child of a U.S. citizen.",
+        "IR5": "Parent of a U.S. citizen.",
+        "K1": "Fiancé(e) visa path leading to adjustment after entry.",
+    }
+    return mapping.get(category, "")
 with st.sidebar:
     lang_code = st.selectbox("LANGUAGE", list(TRANSLATIONS.keys()), format_func=lambda k: f'{TRANSLATIONS[k]["flag"]} {TRANSLATIONS[k]["label"]}', key="lang_code")
     tr = TRANSLATIONS[lang_code]
@@ -394,9 +449,35 @@ if case_type == "ir":
 
     st.markdown(f'<div class="section-shell"><div class="kicker" style="margin-bottom:.6rem;">{tr["interviewForecast"]}</div><div class="small-muted" style="margin-bottom:.85rem;">{tr["startingPointCopy"]}</div><div style="display:grid;grid-template-columns:1fr 1fr;gap:1px;"><div style="background:#111;padding:.95rem 1rem;"><div class="metric-l">{tr["startingPoint"]}</div><div style="font-family:JetBrains Mono, monospace;color:#fff;margin-top:.3rem;">{nvc_complete_dt.strftime("%B %d, %Y")}</div><div class="small-muted" style="margin-top:.15rem;">{tr["startingPointCopy"]}</div></div><div style="background:#111;padding:.95rem 1rem;"><div class="metric-l">{tr["estimatedWindow"]}</div><div style="font-family:JetBrains Mono, monospace;color:{accent};margin-top:.3rem;">{interview_early.strftime("%b %d, %Y")} — {interview_late.strftime("%b %d, %Y")}</div><div class="small-muted" style="margin-top:.15rem;">{tr["estimatedWindowCopy"]}</div></div></div></div>', unsafe_allow_html=True)
 
+    timeline_items = [
+        {"label": tr["nvcComplete"], "value": nvc_complete_dt.strftime("%b %d, %Y"), "note": tr["startingPointCopy"]},
+        {"label": tr["avgWaitTime"], "value": f"{wait_early}–{wait_late} {tr['days']}", "note": tr["estimatedWindowCopy"]},
+        {"label": tr["interviewWindow"], "value": f"{interview_early.strftime('%b %d, %Y')} — {interview_late.strftime('%b %d, %Y')}", "note": tr["estimatedScheduling"]},
+    ]
+    st.markdown(f'<div class="kicker" style="margin-bottom:.5rem;">{tr["timeline"]}</div>', unsafe_allow_html=True)
+    st.markdown(build_timeline_html(timeline_items, accent), unsafe_allow_html=True)
+
+    comp = consulate_comparison(posts, selected_post)
+    if comp:
+        a1, a2, a3, a4 = st.columns(4)
+        with a1: metric_block(tr["selectedPost"], comp["selected"])
+        with a2: metric_block(tr["fastestPost"], comp["fastest"])
+        with a3: metric_block(tr["slowestPost"], comp["slowest"])
+        with a4: metric_block(tr["regionalAverage"], comp["average"])
+
+    with st.expander(tr["shareSummary"]):
+        summary = f"{CATEGORY_LABELS.get(category, category)} | {region_label} | {selected_post['city'] if selected_post else '—'} | NVC complete: {nvc_complete_dt.strftime('%Y-%m-%d')} | Interview estimate: {interview_early.strftime('%Y-%m-%d')} to {interview_late.strftime('%Y-%m-%d')}"
+        st.text_area(tr["copyReady"], summary, height=90)
+
     if selected_post:
         consulate_block(selected_post, interview_early, interview_late, accent, tr)
         st.plotly_chart(build_consulate_map(posts, selected_post["id"], accent), use_container_width=True)
+
+    st.markdown(f'<div class="kicker" style="margin-bottom:.5rem;">{tr["dataFreshness"]}</div>', unsafe_allow_html=True)
+    f1, f2, f3 = st.columns(3)
+    with f1: metric_block(tr["latestBulletin"], latest_bulletin_dt.strftime("%b %Y"))
+    with f2: metric_block(tr["lastRefresh"], datetime.now().strftime("%Y-%m-%d %H:%M"))
+    with f3: metric_block(tr["source"], tr["openSource"])
 
     st.markdown('<div style="position:fixed;bottom:10px;right:20px;font-size:10px;color:#555;font-family:JetBrains Mono, monospace;">github.com/roxannehernan</div>', unsafe_allow_html=True)
     st.stop()
@@ -405,6 +486,8 @@ df = fetch_bulletins(history_months)
 if df.empty:
     st.error(tr["noData"])
     st.stop()
+
+latest_bulletin_dt = df["bulletin_date"].max()
 
 priority_dt = datetime.combine(priority_date, datetime.min.time())
 fc = forecast(df, category, region, priority_dt, table_type, confidence)
@@ -438,7 +521,36 @@ with tab_forecast:
         st.plotly_chart(build_consulate_map(posts, selected_post["id"], accent), use_container_width=True)
 
     if fc["status"] == "OK":
-        st.markdown(f'<div class="section-shell"><div style="font-family:Instrument Serif, serif;font-size:1.18rem;color:#fff;margin-bottom:.45rem;">{tr["projectedWindow"]}</div><div class="small-muted" style="margin-bottom:.9rem;">{tr["basedOn"]} {fc["n"]} {tr["monthsOf"]} {int(confidence*100)}% {tr["confidenceWord"]}. {tr["nvcNote"]}</div><div style="display:grid;grid-template-columns:1fr 1fr;gap:1px;"><div style="background:#111;padding:.95rem 1rem;"><div class="metric-l">{tr["becomeCurrent"]}</div><div style="font-family:JetBrains Mono, monospace;color:#fff;margin-top:.3rem;">{fc["projected_current"].strftime("%B %Y")}</div><div class="small-muted" style="margin-top:.15rem;">{fc["months_est"]} {tr["monthsFromNow"]}</div></div><div style="background:#111;padding:.95rem 1rem;"><div class="metric-l">{tr["interviewSched"]}</div><div style="font-family:JetBrains Mono, monospace;color:{accent};margin-top:.3rem;">{fc["interview_early"].strftime("%b %Y")} — {fc["interview_late"].strftime("%b %Y")}</div><div class="small-muted" style="margin-top:.15rem;">{tr["consulateCapacity"]}</div></div></div></div>', unsafe_allow_html=True)
+        st.markdown(f'<div class="section-shell"><div style="font-family:Instrument Serif, serif;font-size:1.18rem;color:#fff;margin-bottom:.45rem;">{tr["projectedWindow"]}</div><div class="small-muted" style="margin-bottom:.9rem;">{tr["basedOn"]} {fc["n"]} {tr["monthsOf"]} {int(confidence*100)}% {tr["confidenceWord"]}. {tr["nvcNote"]}</div><div class="small-muted" style="margin-bottom:.9rem;">{tr["uncertainty"]}</div><div style="display:grid;grid-template-columns:1fr 1fr;gap:1px;"><div style="background:#111;padding:.95rem 1rem;"><div class="metric-l">{tr["becomeCurrent"]}</div><div style="font-family:JetBrains Mono, monospace;color:#fff;margin-top:.3rem;">{fc["projected_current"].strftime("%B %Y")}</div><div class="small-muted" style="margin-top:.15rem;">{fc["months_est"]} {tr["monthsFromNow"]}</div></div><div style="background:#111;padding:.95rem 1rem;"><div class="metric-l">{tr["interviewSched"]}</div><div style="font-family:JetBrains Mono, monospace;color:{accent};margin-top:.3rem;">{fc["interview_early"].strftime("%b %Y")} — {fc["interview_late"].strftime("%b %Y")}</div><div class="small-muted" style="margin-top:.15rem;">{tr["consulateCapacity"]}</div></div></div></div>', unsafe_allow_html=True)
+
+        timeline_items = [
+            {"label": tr["priorityDate"], "value": priority_dt.strftime("%b %d, %Y"), "note": CATEGORY_LABELS.get(category, category)},
+            {"label": tr["currentBy"], "value": fc["projected_current"].strftime("%b %Y"), "note": tr["becomeCurrent"]},
+            {"label": tr["interviewWindow"], "value": f'{fc["interview_early"].strftime("%b %Y")} — {fc["interview_late"].strftime("%b %Y")}', "note": tr["interviewSched"]},
+        ]
+        st.markdown(f'<div class="kicker" style="margin-bottom:.5rem;">{tr["timeline"]}</div>', unsafe_allow_html=True)
+        st.markdown(build_timeline_html(timeline_items, accent), unsafe_allow_html=True)
+
+        comp = consulate_comparison(posts, selected_post)
+        if comp:
+            a1, a2, a3, a4 = st.columns(4)
+            with a1: metric_block(tr["selectedPost"], comp["selected"])
+            with a2: metric_block(tr["fastestPost"], comp["fastest"])
+            with a3: metric_block(tr["slowestPost"], comp["slowest"])
+            with a4: metric_block(tr["regionalAverage"], comp["average"])
+
+        with st.expander(tr["categoryHelp"]):
+            st.write(category_help_text(category))
+
+        with st.expander(tr["shareSummary"]):
+            summary = f"{CATEGORY_LABELS.get(category, category)} | {region_label} | {selected_post['city'] if selected_post else '—'} | Priority date: {priority_dt.strftime('%Y-%m-%d')} | Current estimate: {fc['projected_current'].strftime('%Y-%m-%d')} | Interview estimate: {fc['interview_early'].strftime('%Y-%m-%d')} to {fc['interview_late'].strftime('%Y-%m-%d')}"
+            st.text_area(tr["copyReady"], summary, height=90)
+
+        st.markdown(f'<div class="kicker" style="margin-bottom:.5rem;">{tr["dataFreshness"]}</div>', unsafe_allow_html=True)
+        f1, f2, f3 = st.columns(3)
+        with f1: metric_block(tr["latestBulletin"], latest_bulletin_dt.strftime("%b %Y"))
+        with f2: metric_block(tr["lastRefresh"], datetime.now().strftime("%Y-%m-%d %H:%M"))
+        with f3: metric_block(tr["source"], tr["openSource"])
 
 with tab_data:
     data_df = mv[["bulletin_date", "cutoff_date", "move"]].copy()
