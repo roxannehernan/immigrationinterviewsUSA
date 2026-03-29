@@ -1,19 +1,3 @@
-Content is user-generated and unverified.
-"""
-Visa Bulletin Forecast — Streamlit Web App
-===========================================
-Deploy to Streamlit Cloud for free sharing.
-
-Setup:
-    pip install streamlit requests beautifulsoup4 pandas numpy plotly
-    streamlit run app.py
-
-Deploy to Streamlit Cloud:
-    1. Push this repo to GitHub
-    2. Go to share.streamlit.io
-    3. Connect your repo → Deploy
-"""
-
 import re
 import streamlit as st
 import pandas as pd
