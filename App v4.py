@@ -328,20 +328,21 @@ def build_consulate_map(posts: list[dict], selected_id: str, accent: str):
 def build_timeline_html(items, accent: str):
     parts = []
     for idx, item in enumerate(items):
-        parts.append(f"""
-        <div style="display:flex;align-items:flex-start;gap:.8rem;flex:1;">
-            <div style="display:flex;flex-direction:column;align-items:center;min-width:16px;">
-                <div style="width:12px;height:12px;border-radius:999px;background:{accent};margin-top:4px;"></div>
-                {'<div style="width:2px;flex:1;background:#222;min-height:36px;margin-top:6px;"></div>' if idx < len(items)-1 else ''}
-            </div>
-            <div style="padding-bottom:.6rem;">
-                <div class="metric-l" style="margin-bottom:.2rem;">{item['label']}</div>
-                <div style="font-family:JetBrains Mono, monospace;color:#fff;font-size:.9rem;">{item['value']}</div>
-                <div class="small-muted" style="margin-top:.15rem;">{item.get('note','')}</div>
-            </div>
-        </div>
-        """)
-    return '<div class="section-shell">' + "".join(parts) + '</div>'
+        connector = '<div style="width:2px;flex:1;background:#222;min-height:36px;margin-top:6px;"></div>' if idx < len(items) - 1 else ''
+        parts.append(
+            f'<div style="display:flex;align-items:flex-start;gap:.8rem;flex:1;">'
+            f'<div style="display:flex;flex-direction:column;align-items:center;min-width:16px;">'
+            f'<div style="width:12px;height:12px;border-radius:999px;background:{accent};margin-top:4px;"></div>'
+            f'{connector}'
+            f'</div>'
+            f'<div style="padding-bottom:.6rem;">'
+            f'<div class="metric-l" style="margin-bottom:.2rem;">{item["label"]}</div>'
+            f'<div style="font-family:JetBrains Mono, monospace;color:#fff;font-size:.9rem;">{item["value"]}</div>'
+            f'<div class="small-muted" style="margin-top:.15rem;">{item.get("note","")}</div>'
+            f'</div>'
+            f'</div>'
+        )
+    return '<div class="section-shell">' + ''.join(parts) + '</div>'
 
 def parse_wait_mid(wait_str: str) -> int:
     low, high = parse_wait_time(wait_str)
